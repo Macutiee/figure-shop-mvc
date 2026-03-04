@@ -16,11 +16,11 @@ class ProductModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // 2. Thêm mới (Create)
-    public function create($name, $price, $brand, $image) {
-        $query = "INSERT INTO products (name, price, brand, image) VALUES (:name, :price, :brand, :image)";
+    // Thêm mới 
+    public function create($name, $price, $brand, $image, $stock) {
+        $query = "INSERT INTO products (name, price, brand, image, stock) VALUES (:name, :price, :brand, :image, :stock)";
         $stmt = $this->conn->prepare($query);
-        $stmt->execute(['name' => $name, 'price' => $price, 'brand' => $brand, 'image' => $image]);
+        $stmt->execute(['name' => $name, 'price' => $price, 'brand' => $brand, 'image' => $image, 'stock' => $stock]);
     }
 
     // 3. Lấy 1 sản phẩm để sửa (Get by ID)
@@ -31,16 +31,26 @@ class ProductModel {
     }
 
     // 4. Cập nhật (Update)
-    public function update($id, $name, $price, $brand, $image) {
-        $query = "UPDATE products SET name=:name, price=:price, brand=:brand, image=:image WHERE id=:id";
+    public function update($id, $name, $price, $brand, $image, $stock) {
+        $query = "UPDATE products SET name=:name, price=:price, brand=:brand, image=:image, stock=:stock WHERE id=:id";
         $stmt = $this->conn->prepare($query);
-        $stmt->execute(['name' => $name, 'price' => $price, 'brand' => $brand, 'image' => $image, 'id' => $id]);
+        $stmt->execute(['name' => $name, 'price' => $price, 'brand' => $brand, 'image' => $image, 'stock' => $stock, 'id' => $id]);
     }
 
     // 5. Xóa (Delete)
     public function delete($id) {
         $stmt = $this->conn->prepare("DELETE FROM products WHERE id = :id");
         $stmt->execute(['id' => $id]);
+    }
+    // Hàm tìm kiếm theo tên hoặc hãng
+    public function search($keyword) {
+        // Dùng LIKE để tìm từ khóa có chứa trong tên hoặc hãng
+        $sql = "SELECT * FROM products WHERE name LIKE :keyword OR brand LIKE :keyword ORDER BY id DESC";
+        
+        $stmt = $this->conn->prepare($sql);
+        
+        $stmt->execute(['keyword' => '%' . $keyword . '%']);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 ?>

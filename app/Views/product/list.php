@@ -3,14 +3,14 @@
 <style>
     /* Hiệu ứng khi di chuột vào ảnh */
     .figure-img {
-        transition: all 0.3s ease-in-out; /* Chuyển động mượt trong 0.3s */
-        cursor: pointer; /* Đổi con trỏ chuột thành hình bàn tay */
-        object-fit: cover; /* Giữ ảnh không bị méo */
+        transition: all 0.3s ease-in-out; 
+        cursor: pointer; 
+        object-fit: cover; 
     }
 
     .figure-img:hover {
-        transform: scale(3); /* Phóng to gấp 3 lần */
-        z-index: 100; /* Đè lên tất cả các phần tử khác */
+        transform: scale(3); 
+        z-index: 100; 
         position: relative; /* Bắt buộc có để z-index hoạt động */
         border: 2px solid #fff; /* Thêm viền trắng cho nổi */
         box-shadow: 0 10px 20px rgba(0,0,0,0.5); /* Đổ bóng cho đẹp */
@@ -25,23 +25,46 @@
     <div class="container mt-5">
         <h2 class="text-center mb-4">Danh sách Figure (Mô hình)</h2>
         
-        <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addModal">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">
             + Thêm Figure Mới
         </button>
+
+        <a href="index.php" class="btn btn-info ms-2 text-white fw-bold">
+            🏠 Xem Cửa Hàng
+        </a>
+
+    <form action="index.php" method="GET" class="d-flex w-50">
+        <input type="hidden" name="action" value="admin"> 
+        
+        <input type="text" name="search" class="form-control me-2" 
+               placeholder="Nhập tên Figure hoặc hãng..." 
+               value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
+        
+        <button type="submit" class="btn btn-success">Tìm</button>
+        
+        <?php if(isset($_GET['search']) && $_GET['search'] != ''): ?>
+            <a href="index.php?action=admin" class="btn btn-secondary ms-2">Hủy</a>
+        <?php endif; ?>
+    </form>
+
+</div>
 
         <div class="card shadow">
             <div class="card-body">
                 <table class="table table-hover table-bordered">
                     <thead class="table-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th>Ảnh</th>
-                            <th>Tên Figure</th>
-                            <th>Hãng (Brand)</th>
-                            <th>Giá (VND)</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
+    <tr>
+        <th>ID</th>
+        <th>Ảnh</th>
+        <th>Tên Figure</th>
+        <th>Hãng (Brand)</th>
+        <th>Giá (VND)</th>
+        <th>Tồn kho</th>
+        <th>Hành động</th>
+    </tr>
+</thead>
                     <tbody>
                         <?php foreach ($products as $row): ?>
                         <tr>
@@ -56,6 +79,9 @@
                             <td><?= $row['name'] ?></td>
                             <td><span class="badge bg-info"><?= $row['brand'] ?></span></td>
                             <td class="fw-bold text-danger"><?= number_format($row['price']) ?> đ</td>
+                            
+                            <td class="text-center fw-bold"><?= $row['stock'] ?></td>
+                            
                             <td>
                                 <a href="index.php?action=edit&id=<?= $row['id'] ?>" class="btn btn-warning btn-sm">Sửa</a>
                                 <a href="index.php?action=delete&id=<?= $row['id'] ?>" onclick="return confirm('Xóa hả?')" class="btn btn-danger btn-sm">Xóa</a>
@@ -90,6 +116,10 @@
                             <input type="number" name="price" class="form-control" required>
                         </div>
                         <div class="mb-3">
+                            <label>Số lượng tồn kho</label>
+                            <input type="number" name="stock" class="form-control" required min="0" value="10">
+                        </div>
+                        <div class="mb-3">
                             <label>Link Ảnh</label>
                             <input type="text" name="image" class="form-control" placeholder="https://...">
                         </div>
@@ -116,7 +146,6 @@
         </div>
     </div>
     <script>
-    // Hàm này chạy khi bấm vào ảnh nhỏ
     function viewImage(linkAnh, tenFigure) {
         // 1. Gán link ảnh vào khung Modal
         document.getElementById('modalImageSrc').src = linkAnh;
