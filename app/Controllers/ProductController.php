@@ -34,10 +34,14 @@ class ProductController {
             $brand = trim($_POST['brand']);
             $price = $_POST['price'];
             $image = $_POST['image'];
-            
             $stock = $_POST['stock']; 
+            
+            // Hứng thêm 3 biến Flash Sale
+            $old_price = isset($_POST['old_price']) ? $_POST['old_price'] : 0;
+            $sold_count = isset($_POST['sold_count']) ? $_POST['sold_count'] : 0;
+            $is_flash_sale = isset($_POST['is_flash_sale']) ? $_POST['is_flash_sale'] : 0;
 
-            $this->model->create($name, $price, $brand, $image, $stock);
+            $this->model->create($name, $price, $brand, $image, $stock, $old_price, $sold_count, $is_flash_sale);
             
             header("Location: index.php?action=admin");
             exit();
@@ -55,21 +59,25 @@ class ProductController {
             $brand = trim($_POST['brand']);
             $price = $_POST['price'];
             $image = $_POST['image'];
-            
             $stock = $_POST['stock']; 
 
-            $this->model->update($id, $name, $price, $brand, $image, $stock);
+            // Hứng thêm 3 biến Flash Sale
+            $old_price = isset($_POST['old_price']) ? $_POST['old_price'] : 0;
+            $sold_count = isset($_POST['sold_count']) ? $_POST['sold_count'] : 0;
+            $is_flash_sale = isset($_POST['is_flash_sale']) ? $_POST['is_flash_sale'] : 0;
+
+            $this->model->update($id, $name, $price, $brand, $image, $stock, $old_price, $sold_count, $is_flash_sale);
             
             header("Location: index.php?action=admin");
             exit();
         }
     }
 
-    // Xử lý xóa
     public function destroy($id) {
         $this->model->delete($id);
         header("Location: index.php");
     }
+
     public function addToCart($id) {
         $product = $this->model->getById($id);
 
@@ -102,17 +110,19 @@ class ProductController {
         header("Location: index.php");
         exit();
     }
+
     public function cart() {
         require_once __DIR__ . '/../Views/product/cart.php';
     }
+
     public function removeFromCart($id) {
         if (isset($_SESSION['cart'][$id])) {
             unset($_SESSION['cart'][$id]); 
         }
-        
         header("Location: index.php?action=cart");
         exit();
     }
+
     public function updateCart($id, $quantity) {
         if (isset($_SESSION['cart'][$id])) {
             $maxStock = $_SESSION['cart'][$id]['stock']; 
@@ -130,6 +140,7 @@ class ProductController {
         header("Location: index.php?action=cart");
         exit();
     }
+
     public function buyNow($id) {
         $product = $this->model->getById($id);
 
@@ -158,39 +169,48 @@ class ProductController {
             exit();
         }
         
-        // KHÁC BIỆT Ở ĐÂY: Đá khách sang thẳng trang Giỏ Hàng (Cart)
         header("Location: index.php?action=cart");
         exit();
     }
-    // 1. Hàm hiển thị form nhập thông tin giao hàng
+
     public function checkout() {
-        // Nếu giỏ hàng trống thì không cho vào trang thanh toán, đá về trang chủ
         if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
             header("Location: index.php");
             exit();
         }
-        // Gọi file giao diện thanh toán ra
         require_once __DIR__ . '/../Views/product/checkout.php';
     }
 
-    // 2. Hàm xử lý khi khách bấm nút "Đặt Hàng"
+    // HÀM XỬ LÝ KHI KHÁCH BẤM CHỐT ĐƠN (Đã dọn dẹp sạch sẽ)
     public function processCheckout() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // Lấy thông tin khách vừa nhập
-            $fullname = htmlspecialchars($_POST['fullname']);
-            $phone = htmlspecialchars($_POST['phone']);
-            $address = htmlspecialchars($_POST['address']);
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
+            
+            $name = htmlspecialchars($_POST['customer_name']);
+            $phone = htmlspecialchars($_POST['customer_phone']);
+            $address = htmlspecialchars($_POST['customer_address']);
+            $note = isset($_POST['customer_note']) ? htmlspecialchars($_POST['customer_note']) : '';
 
-            // Lưu ý: Đáng lẽ chỗ này mình sẽ viết code lưu vào Database (bảng orders).
-            // Nhưng tạm thời mình sẽ giả lập Đặt hàng thành công & Xóa sạch giỏ hàng nha!
+            $total = 0;
+            foreach ($_SESSION['cart'] as $item) {
+                $total += $item['price'] * $item['quantity'];
+            }
 
-            unset($_SESSION['cart']); // Đặt xong thì dọn sạch giỏ hàng
+            // Gọi Model để lưu xuống Database (Đã sửa lại thành $this->model)
+            $success = $this->model->saveOrder($name, $phone, $address, $note, $total, $_SESSION['cart']);
 
-            // Hiện thông báo thành công và đá về trang chủ
-            echo "<script>
-                alert('🎉 Tuyệt vời! Bạn đã đặt hàng thành công.\\nShipper sẽ giao đến địa chỉ: $address cho bạn $fullname.\\nCảm ơn bạn đã mua sắm!');
-                window.location.href = 'index.php';
-            </script>";
+            if ($success) {
+                unset($_SESSION['cart']); // Xóa sạch giỏ hàng
+                echo "<script>
+                    alert('🎉 Đặt hàng thành công!\\nWaifu sẽ được gửi tới: $address cho bạn $name.\\nCảm ơn bạn đã rước các ẻm!');
+                    window.location.href = 'index.php';
+                </script>";
+                exit();
+            } else {
+                echo "<script>alert('Lỗi hệ thống! Không thể đặt hàng lúc này.'); window.history.back();</script>";
+                exit();
+            }
+        } else {
+            header("Location: index.php?action=cart");
             exit();
         }
     }

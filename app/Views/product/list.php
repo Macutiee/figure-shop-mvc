@@ -1,40 +1,74 @@
 <!DOCTYPE html>
 <html lang="vi">
-<style>
-    /* Hiệu ứng khi di chuột vào ảnh */
-    .figure-img {
-        transition: all 0.3s ease-in-out; 
-        cursor: pointer; 
-        object-fit: cover; 
-    }
-
-    .figure-img:hover {
-        transform: scale(3); 
-        z-index: 100; 
-        position: relative; /* Bắt buộc có để z-index hoạt động */
-        border: 2px solid #fff; /* Thêm viền trắng cho nổi */
-        box-shadow: 0 10px 20px rgba(0,0,0,0.5); /* Đổ bóng cho đẹp */
-    }
-</style>
 <head>
     <meta charset="UTF-8">
     <title>Quản lý Figure Shop</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        /* --- GIAO DIỆN ADMIN HỒNG KUTE --- */
+        .admin-pink-bg { background-color: #fff0f3; } /* Nền hồng siêu nhạt */
+        
+        /* Box chứa bảng */
+        .card-pink { 
+            border: none; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(255, 182, 193, 0.4); 
+            background: #fff;
+        }
+
+        /* Đầu bảng Gradient Hồng */
+        .table-pink-header { 
+            background: linear-gradient(to right, #ff758f, #ff4d6d) !important; 
+        }
+        .table-pink-header th { 
+            background-color: transparent !important;
+            color: white !important; 
+            border-bottom: none;
+            padding: 15px;
+        }
+
+        /* Nút bấm kute */
+        .btn-pink { 
+            background: linear-gradient(to right, #ff758f, #ff4d6d); 
+            color: white; 
+            border: none; 
+            transition: all 0.3s ease; 
+            font-weight: bold;
+        }
+        .btn-pink:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 5px 15px rgba(255, 77, 109, 0.4); 
+            color: white;
+        }
+        
+        .btn-pink-outline { 
+            border: 2px solid #ff758f; 
+            color: #ff758f; 
+            background: transparent; 
+            font-weight: bold; 
+            transition: all 0.3s ease;
+        }
+        .btn-pink-outline:hover { 
+            background-color: #ff758f; 
+            color: white; 
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
-<body class="bg-light">
+<body class="admin-pink-bg">
     <div class="container mt-5">
         <h2 class="text-center mb-4">Danh sách Figure (Mô hình)</h2>
         
         <div class="d-flex justify-content-between align-items-center mb-3">
             
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addModal">
+        <button type="button" class="btn btn-pink rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addModal">
             + Thêm Figure Mới
         </button>
 
-        <a href="index.php" class="btn btn-info ms-2 text-white fw-bold">
+        <a href="index.php" class="btn btn-pink-outline rounded-pill px-4 ms-2">
             🏠 Xem Cửa Hàng
         </a>
-
     <form action="index.php" method="GET" class="d-flex w-50">
         <input type="hidden" name="action" value="admin"> 
         
@@ -51,10 +85,10 @@
 
 </div>
 
-        <div class="card shadow">
+        <div class="card card-pink">
             <div class="card-body">
                 <table class="table table-hover table-bordered">
-                    <thead class="table-dark">
+    <thead class="table-pink-header text-center align-middle">
     <tr>
         <th>ID</th>
         <th>Ảnh</th>
@@ -64,7 +98,7 @@
         <th>Tồn kho</th>
         <th>Hành động</th>
     </tr>
-</thead>
+    </thead>
                     <tbody>
                         <?php foreach ($products as $row): ?>
                         <tr>

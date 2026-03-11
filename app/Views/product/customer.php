@@ -5,141 +5,251 @@
     <title>Ma's Store - Mô hình chính hãng</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Nền web hơi xám nhẹ để làm nổi bật thẻ sản phẩm màu trắng */
-        body { background-color: #f4f6f9; }
-        
-        /* Hiệu ứng thẻ sản phẩm: bo góc, viền mờ, khi chuột vào thì nổi lên */
-        .product-card {
-            border: none;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            overflow: hidden;
-            background: #fff;
-        }
-        .product-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important;
+        /* --- SỬA LỖI ẢNH KHÔNG ĐỀU --- */
+        .product-card img.product-img {
+        height: 300px; /* Bà có thể chỉnh con số này (ví dụ 250px hoặc 350px) sao cho vừa mắt */
+        object-fit: cover; /* QUAN TRỌNG: Nó sẽ cắt ảnh một chút để vừa khung mà KHÔNG làm méo hình */
+        width: 100%; /* Đảm bảo ảnh đầy chiều ngang */
+}
+        /* --- 2. HIỆU ỨNG NAVBAR SIÊU MƯỢT (PASTEL PINK KUTE) --- */
+        .shop-navbar {
+            background-color: #ffe4e8; /* Nền hồng pastel siêu ngọt */
+            box-shadow: 0 4px 15px rgba(255, 182, 193, 0.4); /* Bóng đổ cũng ánh hồng luôn */
+            padding: 15px 0;
+            border-bottom: 2px solid #ffc2d1; /* Viền dưới hồng đậm hơn xíu tạo điểm nhấn */
         }
         
-        /* Cố định chiều cao ảnh để khung không bị thò thụt */
-        .product-img {
-            height: 280px;
-            object-fit: cover;
-            width: 100%;
-            cursor: pointer;
-            transition: transform 0.5s ease;
-        }
-        .product-card:hover .product-img {
-            transform: scale(1.05); /* Rê chuột vào ảnh tự zoom nhẹ sương sương */
-        }
-        
-        /* Giới hạn tên sản phẩm tối đa 2 dòng, dài quá tự ra dấu ... */
-        .figure-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            height: 3rem;
-            color: #2b2b2b;
-        }
-        
-        /* Giá tiền đỏ chót, bự chà bá */
-        .price-text {
-            color: #ff424e;
-            font-weight: 700;
-            font-size: 1.3rem;
-        }
-
-        /* Tem nhãn (Badge) đè lên góc ảnh */
-        .badge-brand { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); font-size: 0.8rem; }
-        .badge-stock { position: absolute; top: 10px; left: 10px; font-size: 0.8rem; }
-        /* --- HIỆU ỨNG CHO NAVBAR MỚI --- */
-        .custom-navbar {
-            background: rgba(255, 255, 255, 0.95); /* Nền trắng hơi trong suốt */
-            backdrop-filter: blur(10px); /* Hiệu ứng kính mờ xịn xò */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Bóng đổ nhẹ nhàng */
-            padding: 12px 0;
-        }
-        
-        /* Chữ Logo chuyển màu Gradient */
-        .logo-text {
-            font-weight: 800;
-            font-size: 2rem;
-            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+        /* Logo đổi sang tone Đỏ hồng mâm xôi */
+        .brand-logo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(to right, #ff0844, #ffb199); /* Đỏ hồng sang cam đào */
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: 0.5px;
+            text-decoration: none;
         }
 
-        /* Thanh tìm kiếm liền khối */
-        .search-input {
-            border-radius: 50px 0 0 50px !important;
-            padding: 10px 20px;
-            border: 2px solid #ffe3e3;
+        /* Khung tìm kiếm phong cách kẹo ngọt */
+        .search-box {
+            border: 2px solid #ffb3c6; /* Viền hồng nhạt */
+            border-radius: 50px;
+            background-color: #fff; 
+            overflow: hidden;
+            display: flex;
+            transition: all 0.3s ease;
+        }
+        .search-box:focus-within {
+            border-color: #ff758f; /* Click vào đậm viền lên */
+            box-shadow: 0 0 8px rgba(255, 117, 143, 0.3);
+        }
+        .search-box input {
+            border: none;
             box-shadow: none !important;
-            transition: all 0.3s;
+            padding: 10px 20px;
+            width: 100%;
+            background-color: transparent;
+            color: #555; 
         }
-        .search-input:focus { border-color: #ff4b2b; }
-        .search-btn {
-            border-radius: 0 50px 50px 0 !important;
-            background: #ff4b2b;
-            color: white;
-            border: 2px solid #ff4b2b;
-            padding: 0 25px;
-            transition: all 0.3s;
+        .search-box input::placeholder {
+            color: #ffb3c6; /* Chữ placeholder màu hồng mờ */
+        }
+        .search-box input:focus { outline: none; }
+        .search-box button {
+            background-color: #ff758f; /* Nút tìm kiếm hồng đậm */
+            color: #fff;
+            border: none;
+            padding: 0 30px;
             font-weight: bold;
+            transition: background 0.3s;
         }
-        .search-btn:hover { background: #ff416c; color: white; }
+        .search-box button:hover { background-color: #ff4d6d; }
 
-        /* Icon Giỏ hàng & Admin */
-        .cart-wrapper {
-            font-size: 1.8rem;
+        /* Nút Icon Tròn (Giỏ hàng, Admin) */
+        .icon-btn {
+            width: 48px;
+            height: 48px;
+            background-color: #ffffff; /* Nền trắng nổi trên nền hồng */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             text-decoration: none;
-            transition: transform 0.2s;
-            display: inline-block;
+            color: #ff4d6d; /* Icon màu hồng đậm */
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 1px solid #ffc2d1;
+            box-shadow: 0 2px 8px rgba(255, 182, 193, 0.4);
         }
-        .cart-wrapper:hover { transform: scale(1.15); } /* Rê chuột vào phình to ra */
+        .icon-btn:hover {
+            background-color: #ff758f; /* Rê chuột vào đổi nền hồng */
+            transform: translateY(-4px); 
+            color: #ffffff; /* Icon trắng */
+            border-color: #ff758f;
+        }
         
-        .cart-badge {
+        /* Cục đỏ báo số lượng giỏ hàng */
+        .cart-dot {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background-color: #ff0844; /* Đỏ dâu nổi bần bật */
+            color: white;
             font-size: 0.75rem;
-            padding: 0.35em 0.65em;
-            border: 2px solid #fff; /* Viền trắng tách biệt với icon */
+            font-weight: bold;
+            padding: 3px 7px;
+            border-radius: 50px;
+            border: 2px solid #ffe4e8; /* Viền trùng màu nền Navbar cho tiệp màu */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        /* 1. Fix chữ Tìm kiếm bị rớt dòng */
+        .search-box button {
+            white-space: nowrap; /* Lệnh cấm rớt dòng thần thánh */
+            padding: 0 25px; /* Ép bớt lề lại xíu cho đỡ chật */
         }
 
-        .admin-link {
-            font-size: 1.5rem;
-            text-decoration: none;
-            transition: transform 0.5s ease; /* Xoay mượt mà trong 0.5s */
-            color: #555;
+        /* 2. Banner Tone Hồng Kẹo Ngọt */
+        .pink-banner {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            border: 2px solid #ffc2d1;
         }
-        .admin-link:hover { transform: rotate(180deg); }
+        .pink-banner h1, .pink-banner p {
+            color: #d81b60 !important; /* Chữ hồng đậm cho dễ đọc */
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.7); /* Viền sáng phát quang */
+        }
+
+        /* 3. Nút Mua Ngay Cute */
+        .btn-buy-cute {
+            background: linear-gradient(to right, #ff758f, #ff4d6d);
+            border: none;
+            color: white;
+            box-shadow: 0 4px 10px rgba(255, 77, 109, 0.3);
+            transition: all 0.3s ease;
+        }
+        .btn-buy-cute:hover {
+            transform: translateY(-3px); /* Rê chuột vào nảy lên nhẹ */
+            box-shadow: 0 6px 15px rgba(255, 77, 109, 0.5);
+            color: white;
+        }
+
+        /* 4. Đổi luôn màu cái tem "Còn hàng" xanh lá cho đỡ vô duyên */
+        .badge-stock-cute {
+            background-color: #ffb3c6 !important;
+            color: #fff !important;
+        }
+        /* --- 3. HIỆU ỨNG FLASH SALE CỰC CHÁY --- */
+        .flash-sale-bg {
+            background-color: #ff6b81; /* Nền đỏ hồng rực rỡ */
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .countdown-box {
+            background: #fff;
+            color: #ff4757;
+            font-weight: 900;
+            font-size: 1.2rem;
+            padding: 5px 12px;
+            border-radius: 8px;
+            margin: 0 4px;
+            display: inline-block;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .flash-card {
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.3s;
+        }
+        .flash-card:hover { transform: translateY(-5px); }
+        
+        /* Tag giảm giá góc phải */
+        .discount-badge {
+            position: absolute;
+            top: 0; right: 0;
+            background: #ff4757; color: white;
+            font-weight: bold; font-size: 0.9rem;
+            padding: 4px 10px;
+            border-radius: 0 8px 0 8px;
+            z-index: 10;
+        }
+        
+        /* Ruy băng In Stock góc trái */
+        .instock-ribbon {
+            position: absolute;
+            top: 15px; left: -30px;
+            background: #1e90ff; color: white;
+            font-size: 0.75rem; font-weight: bold;
+            padding: 4px 35px;
+            transform: rotate(-45deg);
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .old-price {
+            text-decoration: line-through;
+            color: #a4b0be; font-size: 0.85rem;
+        }
+        
+        /* Thanh tiến độ bốc cháy */
+        .progress-sale {
+            height: 16px;
+            background-color: #ffcccb;
+            border-radius: 10px;
+            margin-top: 10px;
+            position: relative;
+        }
+        .progress-sale-bar {
+            background: linear-gradient(to right, #ff9a9e, #ff4757);
+            height: 100%; border-radius: 10px;
+        }
+        .progress-text {
+            position: absolute; width: 100%; text-align: center;
+            top: -2px; font-size: 0.75rem; color: white; font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        /* --- FIX LỖI THẺ SẢN PHẨM & KHOẢNG TRẮNG --- */
+        .product-card { border: none; border-radius: 12px; transition: 0.3s; overflow: hidden; background: #fff; }
+        .product-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.1) !important; }
+        
+        /* Khóa cứng chiều cao ảnh, tự cắt cúp không bị méo */
+        .product-img { height: 280px; object-fit: cover; width: 100%; cursor: pointer; transition: 0.5s; }
+        .product-card:hover .product-img { transform: scale(1.05); }
+        
+        /* Ép tem Hãng bay lên góc, KHÔNG được đẩy ảnh xuống */
+        .badge-brand { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7) !important; color: white !important; font-size: 0.8rem; z-index: 10; }
+        
+        /* Cố định chiều cao Tiêu đề để các thẻ luôn bằng nhau */
+        .figure-title { font-size: 1.1rem; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 3rem; }
+        .price-text { color: #ff424e; font-weight: 700; font-size: 1.3rem; }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg custom-navbar sticky-top">
+    <nav class="navbar shop-navbar sticky-top">
         <div class="container d-flex justify-content-between align-items-center">
             
-            <a class="navbar-brand logo-text" href="index.php">
+            <a class="brand-logo" href="index.php">
                 ✨ Ma's Store
             </a>
             
-            <form action="index.php" method="GET" class="d-flex mx-auto" style="width: 45%; max-width: 600px;">
-                <div class="input-group">
-                    <input type="text" name="search" class="form-control search-input" 
-                           placeholder="🔍 Bạn muốn rước Waifu nào về nhà?..." 
+            <form action="index.php" method="GET" class="mx-auto" style="width: 50%; max-width: 600px;">
+                <div class="search-box shadow-sm">
+                    <span class="d-flex align-items-center ps-3 text-muted">🔍</span>
+                    <input type="text" name="search" 
+                           placeholder="Bạn muốn rước Waifu nào về nhà?..." 
                            value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
-                    <button class="btn search-btn" type="submit">Tìm kiếm</button>
+                    <button type="submit">Tìm kiếm</button>
                 </div>
                 <?php if(isset($_GET['search']) && $_GET['search'] != ''): ?>
-                    <a href="index.php" class="btn btn-light rounded-circle ms-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 45px; height: 45px;" title="Hủy tìm kiếm">❌</a>
+                    <div class="text-center mt-1">
+                        <a href="index.php" class="text-danger text-decoration-none" style="font-size: 0.85rem;">✖ Hủy tìm kiếm</a>
+                    </div>
                 <?php endif; ?>
             </form>
 
-            <div class="d-flex align-items-center gap-4">
-                
+            <div class="d-flex align-items-center gap-3">
                 <?php 
                     $cart_count = 0;
                     if(isset($_SESSION['cart'])) {
@@ -148,16 +258,15 @@
                         }
                     }
                 ?>
-                <a href="index.php?action=cart" class="cart-wrapper position-relative text-dark" title="Xem giỏ hàng">
+                
+                <a href="index.php?action=cart" class="icon-btn shadow-sm" title="Giỏ hàng">
                     🛒
                     <?php if($cart_count > 0): ?>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-badge shadow">
-                            <?= $cart_count ?>
-                        </span>
+                        <span class="cart-dot"><?= $cart_count ?></span>
                     <?php endif; ?>
                 </a>
 
-                <a href="index.php?action=admin" class="admin-link text-secondary" title="Vào trang quản trị">
+                <a href="index.php?action=admin" class="icon-btn shadow-sm" title="Quản trị">
                     ⚙️
                 </a>
             </div>
@@ -166,9 +275,100 @@
     </nav>
 
     <div class="container mt-4 mb-5">
-        <div class="p-5 text-center bg-dark text-white rounded-4 shadow" style="background: linear-gradient(45deg, #1a2a6c, #b21f1f, #fdbb2d);">
-            <h1 class="fw-bold display-5">Thiên Đường Figure Chính Hãng</h1>
-            <p class="lead">Săn lùng những mô hình cực phẩm với giá tốt nhất thị trường</p>
+        <div class="p-5 text-center pink-banner rounded-4 shadow-sm">
+            <h1 class="fw-bold display-5">🌸 Thiên Đường Figure Chính Hãng 🌸</h1>
+            <p class="lead fw-bold mt-3">Săn lùng những bé Waifu cực phẩm với giá yêu thương nhất</p>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <div class="flash-sale-bg shadow-lg">
+            
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-light pb-3">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <h2 class="text-white fw-bold mb-0" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">⚡ FLASH SALE</h2>
+                    <div class="d-flex align-items-center">
+                        <span class="countdown-box" id="fs-h">00</span> <span class="text-white fw-bold">:</span>
+                        <span class="countdown-box" id="fs-m">00</span> <span class="text-white fw-bold">:</span>
+                        <span class="countdown-box" id="fs-s">00</span>
+                    </div>
+                </div>
+                <a href="#" class="btn btn-light fw-bold text-danger rounded-pill px-4 shadow-sm">Xem tất cả »</a>
+            </div>
+
+            <div class="row row-cols-2 row-cols-md-4 g-3">
+                <?php
+                $hasFlashSale = false;
+                foreach ($products as $row): 
+                    // CHỈ HIỆN NHỮNG MÓN ĐƯỢC ADMIN TICK CHỌN FLASH SALE
+                    if (isset($row['is_flash_sale']) && $row['is_flash_sale'] == 1):
+                        $hasFlashSale = true;
+                        
+                        // Tự động tính phần trăm giảm giá
+                        $discount = 0;
+                        if ($row['old_price'] > $row['price'] && $row['old_price'] > 0) {
+                            $discount = round((($row['old_price'] - $row['price']) / $row['old_price']) * 100);
+                        }
+                        
+                        // Tính phần trăm thanh tiến độ
+                        $total_items = $row['stock'] + $row['sold_count'];
+                        $percent = $total_items > 0 ? round(($row['sold_count'] / $total_items) * 100) : 0;
+                ?>
+                <div class="col">
+                    <div class="flash-card shadow-sm h-100 pb-2 d-flex flex-column">
+                        <div class="instock-ribbon">In Stock</div>
+                        <?php if($discount > 0): ?>
+                            <div class="discount-badge">-<?= $discount ?>%</div>
+                        <?php endif; ?>
+                        
+                        <div class="overflow-hidden">
+                            <img src="<?= $row['image'] ?>" class="w-100 product-img" style="height: 220px; object-fit: contain; padding: 10px; cursor: pointer;" onclick="viewImage('<?= $row['image'] ?>', '<?= htmlspecialchars($row['name']) ?>')">
+                        </div>
+                        
+                        <div class="p-3 d-flex flex-column flex-grow-1">
+                            <h6 class="figure-title mb-2" style="font-size: 0.95rem; height: 2.8rem;"><?= htmlspecialchars($row['name']) ?></h6>
+                            
+                            <div class="mt-auto">
+                                <div class="d-flex justify-content-between align-items-end mb-2">
+                                    <span class="text-danger fw-bold fs-5"><?= number_format($row['price']) ?>đ</span>
+                                    <?php if(isset($row['old_price']) && $row['old_price'] > 0): ?>
+                                        <span class="old-price"><?= number_format($row['old_price']) ?>đ</span>
+                                    <?php endif; ?>
+                                </div>
+                                
+                                <div class="progress-sale mb-3"> <div class="progress-sale-bar" style="width: <?= $percent ?>%"></div>
+                                    <span class="progress-text">🔥 Đã bán <?= isset($row['sold_count']) ? $row['sold_count'] : 0 ?></span>
+                                </div>
+
+                                <?php if ($row['stock'] > 0): ?>
+                                    <div class="d-flex gap-2">
+                                        <a href="index.php?action=buy_now&id=<?= $row['id'] ?>" class="btn btn-buy-cute flex-grow-1 fw-bold py-1 rounded-3 text-nowrap" title="Mua ngay và thanh toán" style="font-size: 0.95rem;">
+                                            ⚡ Mua ngay
+                                        </a>
+                                        <a href="index.php?action=add_to_cart&id=<?= $row['id'] ?>" class="btn btn-outline-danger py-1 px-3 rounded-3 d-flex align-items-center justify-content-center" title="Thêm vào giỏ hàng" style="border-color: #ff758f; color: #ff758f;">
+                                            <span class="fs-6">🛒</span>
+                                        </a>
+                                    </div>
+                                <?php else: ?>
+                                    <button class="btn btn-secondary w-100 fw-bold py-1 rounded-3" disabled style="font-size: 0.95rem;">
+                                        ❌ Hết Hàng
+                                    </button>
+                                <?php endif; ?>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php 
+                    endif; 
+                endforeach; 
+                if (!$hasFlashSale):
+                ?>
+                    <div class="col-12 text-center text-white py-4 fs-5">
+                        ⏳ Sự kiện Flash Sale đang được chuẩn bị. Vui lòng quay lại sau!
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 
@@ -180,12 +380,7 @@
                 <div class="card h-100 product-card shadow-sm position-relative">
                     
                     <span class="badge badge-brand rounded-pill"><?= htmlspecialchars($row['brand']) ?></span>
-                    <?php if ($row['stock'] > 0): ?>
-                        <span class="badge badge-stock bg-success rounded-pill">Còn <?= $row['stock'] ?></span>
-                    <?php else: ?>
-                        <span class="badge badge-stock bg-secondary rounded-pill">Hết hàng</span>
-                    <?php endif; ?>
-
+                    
                     <div class="overflow-hidden">
                         <img src="<?= $row['image'] ?>" class="card-img-top product-img" 
                              onclick="viewImage('<?= $row['image'] ?>', '<?= htmlspecialchars($row['name']) ?>')">
@@ -195,23 +390,32 @@
                         <h5 class="card-title figure-title" title="<?= htmlspecialchars($row['name']) ?>">
                             <?= htmlspecialchars($row['name']) ?>
                         </h5>
-                        <p class="card-text price-text mt-auto mb-3"><?= number_format($row['price']) ?> đ</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-auto mb-3">
+                            <span class="card-text price-text mb-0"><?= number_format($row['price']) ?> đ</span>
+                            
+                            <?php if ($row['stock'] > 0): ?>
+                                <span class="text-secondary fw-bold" style="font-size: 0.9rem;">SL: <?= $row['stock'] ?></span>
+                            <?php else: ?>
+                                <span class="badge bg-secondary">Hết hàng</span>
+                            <?php endif; ?>
+                        </div>
                         
                         <?php if ($row['stock'] > 0): ?>
-    <div class="d-flex gap-2 mt-auto">
-        <a href="index.php?action=buy_now&id=<?= $row['id'] ?>" class="btn btn-danger flex-grow-1 fw-bold py-2 rounded-3 text-nowrap shadow-sm" title="Mua ngay và thanh toán">
-            Mua ngay
-        </a>
-        
-        <a href="index.php?action=add_to_cart&id=<?= $row['id'] ?>" class="btn btn-outline-primary py-2 px-3 rounded-3 d-flex align-items-center justify-content-center" title="Thêm vào giỏ hàng">
-            <span class="fs-5">🛒</span>
-        </a>
-    </div>
-<?php else: ?>
-    <button class="btn btn-secondary w-100 fw-bold py-2 rounded-3 mt-auto" disabled>
-        ❌ Tạm Hết Hàng
-    </button>
-<?php endif; ?>
+                            <div class="d-flex gap-2">
+                                <a href="index.php?action=buy_now&id=<?= $row['id'] ?>" class="btn btn-buy-cute flex-grow-1 fw-bold py-2 rounded-3 text-nowrap" title="Mua ngay và thanh toán">
+                                    Mua ngay
+                                </a>
+                                
+                                <a href="index.php?action=add_to_cart&id=<?= $row['id'] ?>" class="btn btn-outline-danger py-2 px-3 rounded-3 d-flex align-items-center justify-content-center" title="Thêm vào giỏ hàng" style="border-color: #ff758f; color: #ff758f;">
+                                    <span class="fs-5">🛒</span>
+                                </a>
+                            </div>
+                        <?php else: ?>
+                            <button class="btn btn-secondary w-100 fw-bold py-2 rounded-3" disabled>
+                                ❌ Tạm Hết Hàng
+                            </button>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -239,6 +443,30 @@
             document.getElementById('modalImageTitle').innerText = tenFigure;
             new bootstrap.Modal(document.getElementById('imageModal')).show();
         }
+        // Script chạy đồng hồ Flash Sale
+        function startFlashSaleTimer(duration) {
+            let timer = duration, hours, minutes, seconds;
+            setInterval(function () {
+                hours = parseInt(timer / 3600, 10);
+                minutes = parseInt((timer % 3600) / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                hours = hours < 10 ? "0" + hours : hours;
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                document.getElementById('fs-h').textContent = hours;
+                document.getElementById('fs-m').textContent = minutes;
+                document.getElementById('fs-s').textContent = seconds;
+
+                if (--timer < 0) { timer = duration; } // Hết giờ tự reset chạy lại
+            }, 1000);
+        }
+        
+        // Setup đếm ngược 5 tiếng 30 phút (tính bằng giây)
+        window.onload = function () {
+            startFlashSaleTimer((5 * 3600) + (30 * 60)); 
+        };
     </script>
 </body>
 </html>

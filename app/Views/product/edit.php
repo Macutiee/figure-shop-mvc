@@ -29,10 +29,15 @@
                                     <input type="number" name="price" class="form-control" value="<?= $product['price'] ?>" required>
                                 </div>
                                 <div class="col-md-6 mb-3">
+                                    <label class="fw-bold">Số lượng tồn kho</label>
+                                    <input type="number" name="stock" class="form-control" required value="<?= isset($product['stock']) ? $product['stock'] : 10 ?>">
+                                </div>
+                                <div class="col-md-12 mb-3">
                                     <label class="form-label fw-bold">Hãng (Brand)</label>
                                     <input type="text" name="brand" class="form-control" value="<?= htmlspecialchars($product['brand']) ?>">
                                 </div>
                             </div>
+                            
 
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Link Ảnh</label>

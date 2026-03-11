@@ -54,6 +54,7 @@ switch ($action) {
     case 'process_checkout':
         $controller->processCheckout();
         break;
+    
     default:
         $controller->index();
         break;
