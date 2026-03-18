@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Ma's Store - Mô hình chính hãng</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* --- SỬA LỖI ẢNH KHÔNG ĐỀU --- */
         .product-card img.product-img {
@@ -250,26 +251,51 @@
             </form>
 
             <div class="d-flex align-items-center gap-3">
-                <?php 
-                    $cart_count = 0;
-                    if(isset($_SESSION['cart'])) {
-                        foreach($_SESSION['cart'] as $item) {
-                            $cart_count += $item['quantity'];
-                        }
-                    }
-                ?>
-                
-                <a href="index.php?action=cart" class="icon-btn shadow-sm" title="Giỏ hàng">
-                    🛒
-                    <?php if($cart_count > 0): ?>
-                        <span class="cart-dot"><?= $cart_count ?></span>
-                    <?php endif; ?>
-                </a>
+    
+    <!-- Nút Giỏ Hàng -->
+    <a href="index.php?action=cart" class="position-relative text-dark text-decoration-none">
+        <div class="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+            <i class="fa-solid fa-cart-shopping fs-5" style="color: #ff4d6d;"></i>
+        </div>
+        
+        <!-- CỤC CHỚP ĐỎ HIỆN SỐ ĐÃ ĐƯỢC CẮM ĐIỆN -->
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            <?= isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0 ?>
+        </span>
+    </a>
 
-                <a href="index.php?action=admin" class="icon-btn shadow-sm" title="Quản trị">
-                    ⚙️
-                </a>
-            </div>
+    <!-- KHU VỰC TÀI KHOẢN (ĐỘNG) -->
+    <?php if(isset($_SESSION['user'])): ?>
+        <!-- 1. NẾU ĐÃ ĐĂNG NHẬP -> HIỆN AVATAR VÀ MENU -->
+        <div class="dropdown">
+            <a class="text-decoration-none fw-bold dropdown-toggle d-flex align-items-center gap-2 bg-white rounded-pill shadow-sm px-3 py-1" href="#" role="button" data-bs-toggle="dropdown" style="color: #d81b60; border: 1px solid #ffe0e6;">
+                <img src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['user']['fullname']) ?>&background=fecfef&color=d81b60&bold=true" class="rounded-circle" width="30">
+                <span class="d-none d-md-block"><?= htmlspecialchars($_SESSION['user']['fullname']) ?></span>
+            </a>
+            
+            <ul class="dropdown-menu dropdown-menu-end shadow" style="border: none; border-radius: 15px; background-color: #fff9fa;">
+                <!-- Nếu là Admin thì hiện thêm nút vô Dashboard -->
+                <?php if($_SESSION['user']['role'] === 'admin'): ?>
+                    <li><a class="dropdown-item fw-bold text-danger py-2" href="index.php?action=dashboard"><i class="fa-solid fa-chart-line me-2"></i>Vào Dashboard</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                <?php endif; ?>
+                
+                <li><a class="dropdown-item py-2" href="#" style="color: #c2185b;"><i class="fa-solid fa-user me-2"></i>Hồ sơ của tôi</a></li>
+                <li><a class="dropdown-item py-2" href="#" style="color: #c2185b;"><i class="fa-solid fa-box-open me-2"></i>Đơn hàng đã mua</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item fw-bold text-danger py-2" href="index.php?action=logout"><i class="fa-solid fa-right-from-bracket me-2"></i>Đăng xuất</a></li>
+            </ul>
+        </div>
+
+    <?php else: ?>
+        <!-- 2. NẾU CHƯA ĐĂNG NHẬP -> HIỆN NÚT LOGIN / REGISTER -->
+        <div class="d-none d-md-flex gap-2">
+            <a href="index.php?action=login" class="btn fw-bold rounded-pill px-4" style="border: 2px solid #ff4d6d; color: #ff4d6d; background: white;">Đăng Nhập</a>
+            <a href="index.php?action=login#register" class="btn fw-bold rounded-pill px-4 text-white shadow-sm" style="background: linear-gradient(135deg, #ff758f, #ff4d6d);">Đăng Ký</a>
+        </div>
+    <?php endif; ?>
+
+</div>
 
         </div>
     </nav>

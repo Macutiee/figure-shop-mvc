@@ -54,7 +54,50 @@ switch ($action) {
     case 'process_checkout':
         $controller->processCheckout();
         break;
+
+    case 'dashboard':
+        $controller->dashboard();
+        break;
     
+    case 'login':
+        $controller->login();
+        break;
+    case 'process_login':
+        $controller->processLogin();
+        break;
+    case 'logout':
+        $controller->logout();
+        break;
+
+    case 'edit_user':
+        $controller->editUser($id);
+        break;
+    case 'update_user':
+        $controller->updateUser($id);
+        break;
+        
+    case 'process_register':
+        $controller->processRegister();
+        break;
+        case 'manage_orders':
+            $controller->orderManagement();
+            break;
+        case 'update_status':
+            $controller->updateStatus();
+            break;
+
+        case 'forgot_password':
+            $controller->forgotPassword();
+            break;
+        case 'send_otp':
+            $controller->sendOtp();
+            break;
+        case 'verify_otp':
+            $controller->verifyOtp();
+            break;
+        case 'update_profile':
+            $controller->processUpdateProfile();
+            break;
     default:
         $controller->index();
         break;
