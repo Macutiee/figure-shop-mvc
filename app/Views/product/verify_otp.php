@@ -11,10 +11,10 @@
         <p class="text-center text-muted small mb-4">Check mail <b><?= $_SESSION['reset_email'] ?? '' ?></b> nha!</p>
         
         <!-- Chỗ này Sếp mốt viết thêm hàm process_reset_password vô Controller nha, nay làm demo OTP trước -->
-        <form action="#" method="POST"> 
+        <form action="index.php?action=reset_password" method="POST"> 
             <input type="text" name="otp_code" class="form-control mb-3 text-center fs-4 fw-bold text-danger" placeholder="Nhập 6 số OTP" required maxlength="6" style="letter-spacing: 5px; border-radius: 10px;">
             <input type="password" name="new_password" class="form-control mb-3" placeholder="Nhập Mật khẩu mới" required style="border-radius: 10px;">
-            <button type="button" onclick="alert('Mã OTP khớp: <?= $_SESSION['otp'] ?? 'Lỗi' ?>. Mốt Sếp viết code Update Pass vô DB là xong nha!')" class="btn w-100 fw-bold text-white" style="background: #ff4d6d; border-radius: 10px;">Đổi Mật Khẩu ✨</button>
+            <button type="submit" class="btn w-100 fw-bold text-white" style="background: #ff4d6d; border-radius: 10px;">Đổi Mật Khẩu ✨</button>
         </form>
     </div>
 </body>

@@ -260,7 +260,7 @@
         
         <!-- CỤC CHỚP ĐỎ HIỆN SỐ ĐÃ ĐƯỢC CẮM ĐIỆN -->
         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-            <?= isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0 ?>
+        <?= isset($_SESSION['cart']) ? array_sum(array_column($_SESSION['cart'], 'quantity')) : 0 ?>
         </span>
     </a>
 
@@ -280,8 +280,8 @@
                     <li><hr class="dropdown-divider"></li>
                 <?php endif; ?>
                 
-                <li><a class="dropdown-item py-2" href="#" style="color: #c2185b;"><i class="fa-solid fa-user me-2"></i>Hồ sơ của tôi</a></li>
-                <li><a class="dropdown-item py-2" href="#" style="color: #c2185b;"><i class="fa-solid fa-box-open me-2"></i>Đơn hàng đã mua</a></li>
+                <li><a class="dropdown-item py-2 fw-bold" href="index.php?action=profile" style="color: #d81b60;"><i class="fa-solid fa-user me-2"></i>Hồ sơ của tôi</a></li>
+<li><a class="dropdown-item py-2 fw-bold" href="index.php?action=profile#orders" style="color: #d81b60;"><i class="fa-solid fa-box me-2"></i>Đơn hàng đã mua</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item fw-bold text-danger py-2" href="index.php?action=logout"><i class="fa-solid fa-right-from-bracket me-2"></i>Đăng xuất</a></li>
             </ul>
@@ -494,5 +494,18 @@
             startFlashSaleTimer((5 * 3600) + (30 * 60)); 
         };
     </script>
+    <script>
+    // MA THUẬT CHỐNG GIẬT TRANG LÊN ĐẦU
+    document.addEventListener("DOMContentLoaded", function(event) {
+        // Khi trang vừa load xong, lấy lại vị trí cũ
+        var scrollpos = localStorage.getItem('scrollpos');
+        if (scrollpos) window.scrollTo(0, scrollpos);
+    });
+
+    window.onbeforeunload = function(e) {
+        // Trước khi trang bị tải lại (do bấm thêm giỏ hàng), lưu lẹ vị trí cuộn chuột hiện tại
+        localStorage.setItem('scrollpos', window.scrollY);
+    };
+</script>
 </body>
 </html>

@@ -79,25 +79,61 @@ switch ($action) {
     case 'process_register':
         $controller->processRegister();
         break;
-        case 'manage_orders':
-            $controller->orderManagement();
-            break;
-        case 'update_status':
-            $controller->updateStatus();
-            break;
+    case 'manage_orders':
+        $controller->orderManagement();
+        break;
+    case 'update_status':
+        $controller->updateStatus();
+        break;
 
-        case 'forgot_password':
-            $controller->forgotPassword();
-            break;
-        case 'send_otp':
-            $controller->sendOtp();
-            break;
-        case 'verify_otp':
-            $controller->verifyOtp();
-            break;
-        case 'update_profile':
-            $controller->processUpdateProfile();
-            break;
+    case 'forgot_password':
+        $controller->forgotPassword();
+        break;
+    case 'send_otp':
+        $controller->sendOtp();
+        break;
+    case 'verify_otp':
+        $controller->verifyOtp();
+        break;
+    case 'update_profile':
+        $controller->processUpdateProfile();
+        break;
+
+    case 'reset_password':
+        $controller->resetPassword();
+        break;
+    case 'profile':
+        $controller->profile();
+        break;
+
+        // --- KHÚC DÀNH CHO API ---
+    case 'api_login':
+        require_once 'app/Controllers/ProductApiController.php';
+        $apiController = new ProductApiController();
+        $apiController->apiLogin();
+        break;
+
+    case 'api_products':
+        require_once 'app/Controllers/ProductApiController.php';
+        $apiController = new ProductApiController();
+        $apiController->index();
+        break;
+    case 'api_create':
+        require_once 'app/Controllers/ProductApiController.php';
+        (new ProductApiController())->apiCreate();
+        break;
+    case 'api_update':
+        require_once 'app/Controllers/ProductApiController.php';
+        (new ProductApiController())->apiUpdate();
+        break;
+    case 'api_delete':
+        require_once 'app/Controllers/ProductApiController.php';
+        (new ProductApiController())->apiDelete();
+        break;
+    case 'api_detail':
+        require_once 'app/Controllers/ProductApiController.php';
+        (new ProductApiController())->apiDetail();
+        break;
     default:
         $controller->index();
         break;

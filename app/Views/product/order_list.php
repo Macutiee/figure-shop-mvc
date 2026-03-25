@@ -43,16 +43,17 @@
                     <tr>
                         <td class="fw-bold text-danger">#<?= $order['id'] ?></td>
                         <td class="text-start">
-                            <div class="fw-bold"><?= htmlspecialchars($order['customer_name']) ?></div>
-                            <small class="text-muted"><?= htmlspecialchars($order['address']) ?></small>
+                            <div class="fw-bold"><?= htmlspecialchars($order['customer_name'] ?? 'Khách') ?></div>
+                            <small class="text-muted"><?= htmlspecialchars($order['customer_address'] ?? '') ?></small>
                         </td>
-                        <td><?= htmlspecialchars($order['phone']) ?></td>
-                        <td class="fw-bold text-primary"><?= number_format($order['total_amount']) ?>đ</td>
-                        <td><?= date('d/m/Y', strtotime($order['created_at'])) ?></td>
+                        <td><?= htmlspecialchars($order['customer_phone'] ?? '') ?></td>
+                        <td class="fw-bold text-primary"><?= number_format((float)($order['total_price'] ?? 0)) ?>đ</td>
+                        <td><?= date('d/m/Y', strtotime($order['created_at'] ?? 'now')) ?></td>
                         <td>
                             <?php 
-                                if($order['status'] == 'pending') echo '<span class="status-pending">Chờ xử lý</span>';
-                                elseif($order['status'] == 'completed') echo '<span class="status-completed">Đã giao</span>';
+                                $status = $order['status'] ?? 'pending';
+                                if($status == 'pending') echo '<span class="status-pending">Chờ xử lý</span>';
+                                elseif($status == 'completed') echo '<span class="status-completed">Đã giao</span>';
                                 else echo '<span class="status-cancelled">Đã hủy</span>';
                             ?>
                         </td>

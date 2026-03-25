@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Test API Frontend - Ma's Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light p-5">
+
+<div class="container bg-white p-4 rounded shadow-sm" style="max-width: 600px;">
+    <h3 class="text-danger text-center mb-4">Giao Diện Frontend Gọi API</h3>
+    
+    <div class="mb-3">
+        <button id="btnLogin" class="btn btn-primary w-100">1. Gọi API Đăng Nhập Lấy Token</button>
+    </div>
+    
+    <textarea id="tokenBox" class="form-control mb-3 text-success" rows="2" placeholder="Token sẽ hiện ở đây..." readonly></textarea>
+
+    <div class="mb-3">
+        <button id="btnGetWaifu" class="btn btn-danger w-100">2. Dùng Token Lấy Danh Sách Waifu</button>
+    </div>
+
+    <ul id="waifuList" class="list-group mt-3"></ul>
+</div>
+
+<script>
+    let myToken = ""; // Biến toàn cục để lưu chìa khóa
+
+    // 1. SỰ KIỆN BẤM NÚT ĐĂNG NHẬP
+    document.getElementById('btnLogin').addEventListener('click', function() {
+        // Gọi API Login (ĐÃ THÊM 8080 CHO SẾP)
+        fetch('http://localhost:8080/figure-shop-mvc/index.php?action=api_login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: 'admin@gmail.com', password: '123456' }) // Sửa lại đúng acc Sếp nha
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.token) {
+                myToken = data.token; 
+                document.getElementById('tokenBox').value = myToken; 
+                alert("Lụm Token thành công! 🎉");
+            } else {
+                alert("Lỗi: " + data.message);
+            }
+        })
+        .catch(error => console.error('Lỗi:', error));
+    });
+
+    // 2. SỰ KIỆN BẤM NÚT LẤY SẢN PHẨM
+    document.getElementById('btnGetWaifu').addEventListener('click', function() {
+        if(!myToken) {
+            alert("Bạn chưa bấm lấy Token kìa!"); 
+            return;
+        }
+
+        // Gọi API Products (ĐÃ THÊM 8080 CHO SẾP)
+        fetch('http://localhost:8080/figure-shop-mvc/index.php?action=api_products', {
+            method: 'GET',
+            headers: { 
+                'Authorization': 'Bearer ' + myToken 
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.message && data.message.includes('Unauthorized')) {
+                alert('Token hết hạn hoặc bị sai!'); return;
+            }
+
+            // Xóa sạch danh sách cũ
+            const list = document.getElementById('waifuList');
+            list.innerHTML = "";
+
+            // Vòng lặp vẽ giao diện HTML cho từng sản phẩm
+            data.forEach(product => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.innerHTML = `
+                    <div class="fw-bold">${product.name}</div>
+                    <span class="badge bg-danger rounded-pill">${parseInt(product.price).toLocaleString()}đ</span>
+                `;
+                list.appendChild(li); 
+            });
+        })
+        .catch(error => console.error('Lỗi:', error));
+    });
+</script>
+
+</body>
+</html>

@@ -51,9 +51,9 @@ class ProductController {
                 
                 // Phân luồng: Admin thì lùa vô Dashboard, Khách thì thả ra Trang chủ
                 if ($user['role'] === 'admin') {
-                    echo "<script>alert('Chào mừng Sếp quay lại!'); window.location.href='index.php?action=dashboard';</script>";
+                    echo "<script>alert('Chào mừng admin quay lại!'); window.location.href='index.php?action=dashboard';</script>";
                 } else {
-                    echo "<script>alert('Đăng nhập thành công! Lụm Waifu thôi!'); window.location.href='index.php';</script>";
+                    echo "<script>alert('Đăng nhập thành công!'); window.location.href='index.php';</script>";
                 }
                 exit;
             } else {
@@ -62,23 +62,30 @@ class ProductController {
             }
         }
     }
-    // XỬ LÝ ĐĂNG KÝ TÀI KHOẢN MỚI
+    // XỬ LÝ ĐĂNG KÝ TÀI KHOẢN MỚI (ĐÃ UPDATE CHỐNG TRÙNG EMAIL)
     public function processRegister() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $fullname = $_POST['fullname'];
             $email = $_POST['email'];
             $phone = $_POST['phone'];
             
-            // BĂM MẬT KHẨU CỰC MẠNH NGAY TẠI ĐÂY (Sếp khỏi lo lộ pass nữa)
-            $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+            // 1. KIỂM TRA TRÙNG MAIL: Mượn hàm loginUser để check xem mail này có ai xài chưa
+            $existingUser = $this->model->loginUser($email);
             
-            // Khách tự đăng ký thì mặc định role là 'customer'
-            $role = 'customer';
+            if ($existingUser) {
+                // Nếu có người xài rồi thì báo lỗi và đuổi về trang cũ
+                echo "<script>alert('Email này đã có người đăng ký!'); window.history.back();</script>";
+                exit(); // Dừng lại ngay, không chạy code bên dưới nữa
+            }
+
+            // 2. NẾU MAIL MỚI TINH THÌ MỚI CHO ĐĂNG KÝ
+            $password = password_hash($_POST['password'], PASSWORD_DEFAULT); // Băm pass
+            $role = 'customer'; // Mặc định là khách
 
             // Lưu vô DB
             $this->model->registerUser($fullname, $email, $password, $phone, $role);
             
-            echo "<script>alert('Chào mừng khách yêu! Đăng ký thành công nha! 🎉'); window.location.href='index.php?action=login';</script>";
+            echo "<script>alert('Bạn đã đăng ký thành công! 🎉'); window.location.href='index.php?action=login';</script>";
         }
     }
 
@@ -98,7 +105,7 @@ class ProductController {
 
             $this->model->updateUser($id, $fullname, $email, $phone, $role);
             
-            echo "<script>alert('Cập nhật hồ sơ thành công nha Sếp! ✨'); window.location.href='index.php?action=dashboard';</script>";
+            echo "<script>alert('Cập nhật hồ sơ thành công! ✨'); window.location.href='index.php?action=dashboard';</script>";
         }
     }
 
@@ -169,7 +176,7 @@ class ProductController {
 
     public function destroy($id) {
         $this->model->delete($id);
-        header("Location: index.php");
+        header("Location: " . $_SERVER['HTTP_REFERER']);
     }
 
     public function addToCart($id) {
@@ -388,22 +395,74 @@ class ProductController {
     public function verifyOtp() {
         require_once __DIR__ . '/../Views/product/verify_otp.php';
     }
+    // 4. XỬ LÝ ĐỔI MẬT KHẨU KHI NHẬP ĐÚNG OTP
+    public function resetPassword() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $otp_code = trim($_POST['otp_code']);
+            $new_password = $_POST['new_password'];
+
+            // Kiểm tra: OTP khách gõ vô có khớp với mã hệ thống đang nhớ không?
+            if (isset($_SESSION['otp']) && $otp_code == $_SESSION['otp']) {
+                
+                // Khớp rẹt rẹt! Băm nhuyễn cái pass mới ra bảo mật liền
+                $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+                $email = $_SESSION['reset_email'];
+
+                // Kêu Model lưu vô Database
+                $this->model->updatePassword($email, $hashed_password);
+
+                // Lưu xong thì xóa trí nhớ (xóa mã OTP đi để không ai xài lại được nữa)
+                unset($_SESSION['otp']);
+                unset($_SESSION['reset_email']);
+
+                echo "<script>alert('Đổi mật khẩu thành công rực rỡ! Đăng nhập lại nha Sếp! 🎉'); window.location.href='index.php?action=login';</script>";
+            } else {
+                // Nhập bậy bạ thì đuổi về
+                echo "<script>alert('Mã OTP sai rồi hoặc đã hết hạn nha! Kiểm tra lại mail coi chừng nhìn nhầm số!'); window.history.back();</script>";
+            }
+        }
+    }
 
     // XỬ LÝ KHI SẾP BẤM NÚT LƯU Ở MODAL HỒ SƠ
+    // CẬP NHẬT HỒ SƠ (Dùng chung cho cả Admin và Khách)
     public function processUpdateProfile() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user'])) {
             $id = $_SESSION['user']['id'];
             $fullname = trim($_POST['fullname']);
             $new_password = $_POST['new_password'];
 
-            // Nhờ Model lưu xuống kho
+            // Lưu vô DB
             $this->model->updateAdminProfile($id, $fullname, $new_password);
-
-            // Lưu xong thì tự cập nhật luôn cái Tên mới ở trên góc màn hình cho Sếp thấy
+            
+            // Cập nhật lại tên hiển thị trên góc phải
             $_SESSION['user']['fullname'] = $fullname;
 
-            echo "<script>alert('Tuyệt vời Sếp ơi! Cập nhật hồ sơ thành công! ✨'); window.location.href='index.php?action=dashboard';</script>";
+            // Phân luồng: Admin thì về Dashboard, Khách thì về lại trang Profile
+            if ($_SESSION['user']['role'] === 'admin') {
+                echo "<script>alert('Cập nhật thành công nha Sếp!'); window.location.href='index.php?action=dashboard';</script>";
+            } else {
+                echo "<script>alert('Lưu hồ sơ thành công rực rỡ!'); window.location.href='index.php?action=profile';</script>";
+            }
         }
+    }
+    // TRANG QUẢN LÝ HỒ SƠ & ĐƠN HÀNG CỦA KHÁCH
+    public function profile() {
+        if (!isset($_SESSION['user'])) {
+            echo "<script>alert('Sếp phải đăng nhập mới xem được nha!'); window.location.href='index.php?action=login';</script>";
+            exit();
+        }
+        
+        // 1. Lấy thông tin chi tiết của user từ Database
+        $email = $_SESSION['user']['email'];
+        $userInfo = $this->model->loginUser($email); 
+        
+        // 2. Lấy danh sách đơn hàng của khách đó (dựa vào số ĐT)
+        $orders = [];
+        if (!empty($userInfo['phone'])) {
+            $orders = $this->model->getOrdersByPhone($userInfo['phone']);
+        }
+        
+        require_once __DIR__ . '/../Views/product/profile.php';
     }
 }
 ?>

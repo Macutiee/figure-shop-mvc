@@ -196,5 +196,19 @@ class ProductModel {
         $stmt = $this->conn->prepare("UPDATE orders SET status = :status WHERE id = :id");
         return $stmt->execute(['status' => $status, 'id' => $orderId]);
     }
+    // CẬP NHẬT MẬT KHẨU MỚI (CHO CHỨC NĂNG QUÊN MẬT KHẨU)
+    public function updatePassword($email, $newPassword) {
+        $stmt = $this->conn->prepare("UPDATE users SET password = :password WHERE email = :email");
+        return $stmt->execute([
+            'password' => $newPassword,
+            'email' => $email
+        ]);
+    }
+    // TÌM LỊCH SỬ ĐƠN HÀNG BẰNG SỐ ĐIỆN THOẠI KHÁCH
+    public function getOrdersByPhone($phone) {
+        $stmt = $this->conn->prepare("SELECT * FROM orders WHERE customer_phone = :phone ORDER BY created_at DESC");
+        $stmt->execute(['phone' => $phone]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 ?>
