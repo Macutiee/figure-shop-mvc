@@ -22,7 +22,9 @@
     <div class="order-box">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="fw-bold mb-0" style="color: #d81b60;"><i class="fa-solid fa-file-invoice-dollar me-2"></i>Danh Sách Đơn Hàng</h3>
-            <a href="index.php?action=dashboard" class="btn btn-outline-danger rounded-pill px-4">Quay lại Dashboard</a>
+            <a href="index.php?action=dashboard" class="btn btn-secondary rounded-pill px-4">
+                <i class="fa-solid fa-arrow-left me-1"></i> Quay lại
+            </a>
         </div>
 
         <div class="table-responsive">

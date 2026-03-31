@@ -45,7 +45,7 @@
             
             <!-- FORM ĐĂNG NHẬP -->
             <div class="tab-pane fade show active" id="login" role="tabpanel">
-                <form action="index.php?action=process_login" method="POST">
+                <form id="login-form">
                     <div class="mb-3">
                         <input type="email" name="email" class="form-control" placeholder="Email của bạn" required>
                     </div>
@@ -61,7 +61,7 @@
 
             <!-- FORM ĐĂNG KÝ -->
             <div class="tab-pane fade" id="register" role="tabpanel">
-                <form action="index.php?action=process_register" method="POST">
+                <form id="register-form" action="index.php?action=process_register" method="POST">
                     <div class="mb-3">
                         <input type="text" name="fullname" class="form-control" placeholder="Họ và tên" required>
                     </div>
@@ -74,6 +74,9 @@
                     <div class="mb-3">
                         <!-- Chỗ này tui tự động BĂM mật khẩu bằng PHP luôn nha Sếp -->
                         <input type="password" name="password" class="form-control" placeholder="Tạo mật khẩu" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="password" name="confirm_password" class="form-control" placeholder="Xác nhận mật khẩu" required>
                     </div>
                     <button type="submit" class="btn btn-pink w-100 mb-3">Tạo Tài Khoản</button>
                 </form>
@@ -97,11 +100,57 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // JS xịn: Nếu URL có chữ #register, tự động mở thẻ Đăng Ký cho khách
-        if(window.location.hash === '#register') {
-            var registerTab = new bootstrap.Tab(document.getElementById('register-tab'));
-            registerTab.show();
+    // BẮT SỰ KIỆN KHI BẤM NÚT ĐĂNG NHẬP
+    document.getElementById('login-form').addEventListener('submit', function(event) {
+        event.preventDefault(); // Phanh gấp! Không cho trang web tự load lại
+        
+        // Lấy dữ liệu Sếp nhập vô ô email và pass
+        const formData = new FormData(this);
+        const jsonData = {};
+        formData.forEach((value, key) => { jsonData[key] = value; });
+
+        // Mang email/pass đi gọi API Login
+        fetch('index.php?action=api_login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(jsonData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.token) {
+                // Thành công! Bỏ Token vô két sắt của trình duyệt
+                localStorage.setItem('jwtToken', data.token);
+                alert('🎉 Đăng nhập thành công!');
+                
+                // Phân luồng: Admin thì vô Dashboard, khách thì về trang chủ
+                if (data.role === 'admin') {
+                    location.href = 'index.php?action=dashboard';
+                } else {
+                    location.href = 'index.php'; 
+                }
+            } else {
+                alert('❌ Lỗi òi: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Lỗi API:', error);
+            alert('Bị rớt mạng hoặc API đang ngủ, kiểm tra lại nha!');
+        });
+    });
+
+    // BẮT SỰ KIỆN KHI BẤM NÚT ĐĂNG KÝ (để check pass)
+    document.getElementById('register-form').addEventListener('submit', function(event) {
+        const password = this.querySelector('input[name="password"]').value;
+        const confirmPassword = this.querySelector('input[name="confirm_password"]').value;
+
+        // Nếu 2 ô pass không khớp nhau
+        if (password !== confirmPassword) {
+            // Ngăn form gửi đi
+            event.preventDefault(); 
+            // Chửi nó liền
+            alert('Mật khẩu và mật khẩu xác nhận không khớp! Vui lòng kiểm tra lại.');
         }
-    </script>
+    });
+</script>
 </body>
 </html>

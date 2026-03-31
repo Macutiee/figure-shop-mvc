@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../Models/ProductModel.php';
-require_once __DIR__ . '/../utils/JWTHandler.php'; [cite: 6949]
+require_once __DIR__ . '/../utils/JWTHandler.php'; 
 
 class ProductApiController {
     private $model;
@@ -8,56 +8,79 @@ class ProductApiController {
 
     public function __construct() {
         $this->model = new ProductModel();
-        $this->jwtHandler = new JWTHandler(); [cite: 6951]
+        $this->jwtHandler = new JWTHandler(); 
     }
 
     // HÀM KIỂM TRA BẢO MẬT: Bắt buộc phải có Token mới cho vô
     private function authenticate() {
-        $headers = apache_request_headers(); [cite: 6951]
-        if (isset($headers['Authorization'])) { [cite: 6952]
-            $authHeader = $headers['Authorization']; [cite: 6952]
-            $arr = explode(" ", $authHeader); [cite: 6953]
-            $jwt = $arr[1] ?? null; [cite: 6953]
+        $headers = apache_request_headers(); 
+        if (isset($headers['Authorization'])) { 
+            $authHeader = $headers['Authorization']; 
+            $arr = explode(" ", $authHeader); 
+            $jwt = $arr[1] ?? null; 
             
             if ($jwt) {
-                $decoded = $this->jwtHandler->decode($jwt); [cite: 6954]
-                return $decoded ? true : false; [cite: 6955]
+                $decoded = $this->jwtHandler->decode($jwt); 
+                return $decoded ? true : false; 
             }
         }
-        return false; [cite: 6956]
+        return false; 
     }
 
-    // API 1: Lấy danh sách Waifu (Có bảo vệ JWT) [cite: 6710, 6956]
+    // API 1: Lấy danh sách Waifu (Có bảo vệ JWT) 
     public function index() {
-        if ($this->authenticate()) { [cite: 6956]
-            header('Content-Type: application/json'); [cite: 6956]
-            $products = $this->model->getAll(); // Lấy từ Model của Sếp [cite: 6957]
-            echo json_encode($products); [cite: 6957]
+        if ($this->authenticate()) { 
+            header('Content-Type: application/json'); 
+            $products = $this->model->getAll(); // Lấy từ Model của Sếp 
+            echo json_encode($products); 
         } else {
-            http_response_code(401); [cite: 6957]
-            echo json_encode(['message' => 'Bạn chưa đăng nhập hoặc Token hết hạn (Unauthorized)']); [cite: 6958]
+            http_response_code(401); 
+            echo json_encode(['message' => 'Bạn chưa đăng nhập hoặc Token hết hạn (Unauthorized)']); 
         }
     }
 
-    // API 2: Chức năng Đăng nhập để phát Token [cite: 6994]
+    // API 2: Chức năng Đăng nhập để phát Token 
     public function apiLogin() {
-        header('Content-Type: application/json'); [cite: 6994]
-        $data = json_decode(file_get_contents("php://input"), true); [cite: 6995]
+        header('Content-Type: application/json'); 
+        $data = json_decode(file_get_contents("php://input"), true); 
         
         $email = $data['email'] ?? ''; 
         $password = $data['password'] ?? ''; 
         
+        error_log("API Login Attempt: Email = " . $email);
+
         $user = $this->model->loginUser($email); // Xài lại hàm login cũ của Sếp
         
-        if ($user && password_verify($password, $user['password'])) { [cite: 6996]
-            // Tạo Token chứa ID và Email của Sếp [cite: 6996]
-            $token = $this->jwtHandler->encode(['id' => $user['id'], 'email' => $user['email'], 'role' => $user['role']]); [cite: 6996]
-            echo json_encode(['message' => 'Đăng nhập API thành công!', 'token' => $token]); [cite: 6997]
+        if ($user) {
+            error_log("API Login: User found with email " . $email);
+            $isPasswordCorrect = password_verify($password, $user['password']);
+            error_log("API Login: Password verification result for " . $email . ": " . ($isPasswordCorrect ? 'Success' : 'Failure'));
+
+            if ($isPasswordCorrect) {
+                // Đăng nhập thành công, LƯU VÔ SESSION LUÔN để trang chủ nhận biết
+                $_SESSION['user'] = [
+                    'id' => $user['id'],
+                    'fullname' => $user['fullname'],
+                    'email' => $user['email'],
+                    'role' => $user['role'],
+                    'avatar' => $user['avatar'] ?? null
+                ];
+
+                // Tạo Token chứa ID và Email của Sếp 
+                $token = $this->jwtHandler->encode(['id' => $user['id'], 'email' => $user['email'], 'role' => $user['role']]); 
+                // Trả về cả token và role để JS biết đường điều hướng
+                echo json_encode(['message' => 'Đăng nhập thành công!', 'token' => $token, 'role' => $user['role']]); 
+            } else {
+                http_response_code(401); 
+                echo json_encode(['message' => 'Sai email hoặc mật khẩu']); 
+            }
         } else {
-            http_response_code(401); [cite: 6997]
-            echo json_encode(['message' => 'Sai email hoặc mật khẩu']); [cite: 6998]
+            error_log("API Login: User not found with email " . $email);
+            http_response_code(401); 
+            echo json_encode(['message' => 'Sai email hoặc mật khẩu']); 
         }
     }
+
     // BÀI 5.3: API Thêm sản phẩm (POST)
     public function apiCreate() {
         if ($this->authenticate()) { // Bắt buộc phải có Token
@@ -142,6 +165,7 @@ class ProductApiController {
             echo json_encode(['message' => 'Lỗi Token: Bạn không có quyền!']);
         }
     }
+
     // API: Lấy chi tiết MỘT sản phẩm (GET)
     public function apiDetail() {
         if ($this->authenticate()) {

@@ -46,7 +46,8 @@ class ProductController {
                     'id' => $user['id'],
                     'fullname' => $user['fullname'],
                     'email' => $user['email'],
-                    'role' => $user['role']
+                    'role' => $user['role'],
+                    'avatar' => $user['avatar'] ?? null
                 ];
                 
                 // Phân luồng: Admin thì lùa vô Dashboard, Khách thì thả ra Trang chủ
@@ -68,8 +69,16 @@ class ProductController {
             $fullname = $_POST['fullname'];
             $email = $_POST['email'];
             $phone = $_POST['phone'];
+            $password = $_POST['password'];
+            $confirm_password = $_POST['confirm_password'];
             
-            // 1. KIỂM TRA TRÙNG MAIL: Mượn hàm loginUser để check xem mail này có ai xài chưa
+            // 1. KIỂM TRA MẬT KHẨU XÁC NHẬN CÓ KHỚP KHÔNG
+            if ($password !== $confirm_password) {
+                echo "<script>alert('Mật khẩu xác nhận không khớp!'); window.history.back();</script>";
+                exit();
+            }
+
+            // 2. KIỂM TRA TRÙNG MAIL: Mượn hàm loginUser để check xem mail này có ai xài chưa
             $existingUser = $this->model->loginUser($email);
             
             if ($existingUser) {
@@ -78,11 +87,11 @@ class ProductController {
                 exit(); // Dừng lại ngay, không chạy code bên dưới nữa
             }
 
-            // 2. NẾU MAIL MỚI TINH THÌ MỚI CHO ĐĂNG KÝ
-            $password = password_hash($_POST['password'], PASSWORD_DEFAULT); // Băm pass
+            // 3. NẾU MAIL MỚI TINH & PASS KHỚP -> CHO ĐĂNG KÝ
             $role = 'customer'; // Mặc định là khách
 
-            // Lưu vô DB
+            // Lưu vô DB (Gửi pass gốc, Model sẽ tự băm cho bảo mật)
+            // Note: Không băm pass ở đây, vì Model đã làm việc đó rồi, băm 2 lần là lỗi.
             $this->model->registerUser($fullname, $email, $password, $phone, $role);
             
             echo "<script>alert('Bạn đã đăng ký thành công! 🎉'); window.location.href='index.php?action=login';</script>";
@@ -102,9 +111,53 @@ class ProductController {
             $email = $_POST['email'];
             $phone = $_POST['phone'];
             $role = $_POST['role'];
+            $avatar_path = null; // Mặc định là không có avatar mới
 
-            $this->model->updateUser($id, $fullname, $email, $phone, $role);
+            // Lấy đường dẫn avatar cũ để lát nữa mình xóa, tránh rác server
+            $currentUserData = $this->model->getUserById($id);
+            $old_avatar = $currentUserData['avatar'] ?? null;
+
+            // Xử lý upload avatar nếu có
+            if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] == UPLOAD_ERR_OK) {
+                $target_dir = "uploads/avatars/";
+                if (!is_dir($target_dir)) {
+                    mkdir($target_dir, 0777, true);
+                }
+                
+                $file_extension = strtolower(pathinfo($_FILES["avatar"]["name"], PATHINFO_EXTENSION));
+                $safe_filename = "user-" . $id . "-" . time() . "." . $file_extension;
+                $target_file = $target_dir . $safe_filename;
+
+                $allowed_types = ['jpg', 'jpeg', 'png', 'gif'];
+                if (in_array($file_extension, $allowed_types) && $_FILES["avatar"]["size"] < 5000000) {
+                    if (move_uploaded_file($_FILES["avatar"]["tmp_name"], $target_file)) {
+                        $avatar_path = $target_file; // Lấy đường dẫn file để lưu vào DB
+                    } else {
+                        echo "<script>alert('Lỗi: Không thể di chuyển file avatar!'); window.history.back();</script>";
+                        exit();
+                    }
+                } else {
+                    echo "<script>alert('Lỗi: File không hợp lệ! Chỉ chấp nhận ảnh (jpg, png, gif) và dưới 5MB.'); window.history.back();</script>";
+                    exit();
+                }
+            }
+
+            // Gọi model để cập nhật, có thêm avatar_path
+            $this->model->updateUser($id, $fullname, $email, $phone, $role, $avatar_path);
+
+            // Xóa file avatar cũ sau khi đã cập nhật thành công
+            if ($avatar_path !== null && $old_avatar !== null && file_exists($old_avatar)) {
+                unlink($old_avatar);
+            }
             
+            // Nếu admin tự sửa thông tin của chính mình, thì cập nhật lại session luôn cho nóng
+            if (isset($_SESSION['user']) && $_SESSION['user']['id'] == $id) {
+                $_SESSION['user']['fullname'] = $fullname;
+                if ($avatar_path !== null) {
+                    $_SESSION['user']['avatar'] = $avatar_path;
+                }
+            }
+
             echo "<script>alert('Cập nhật hồ sơ thành công! ✨'); window.location.href='index.php?action=dashboard';</script>";
         }
     }
@@ -429,23 +482,83 @@ class ProductController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user'])) {
             $id = $_SESSION['user']['id'];
             $fullname = trim($_POST['fullname']);
-            $new_password = $_POST['new_password'];
+            $current_password = $_POST['current_password'] ?? '';
+            $new_password = $_POST['new_password'] ?? '';
+            $confirm_password = $_POST['confirm_password'] ?? '';
 
-            // Lưu vô DB
-            $this->model->updateAdminProfile($id, $fullname, $new_password);
-            
-            // Cập nhật lại tên hiển thị trên góc phải
-            $_SESSION['user']['fullname'] = $fullname;
+            $password_to_update = ''; // Pass rỗng cho Model nếu không đổi
+            $avatar_path_for_db = null; // Path rỗng cho Model nếu không đổi
+            $update_message_part = [];
 
-            // Phân luồng: Admin thì về Dashboard, Khách thì về lại trang Profile
-            if ($_SESSION['user']['role'] === 'admin') {
-                echo "<script>alert('Cập nhật thành công nha Sếp!'); window.location.href='index.php?action=dashboard';</script>";
-            } else {
-                echo "<script>alert('Lưu hồ sơ thành công rực rỡ!'); window.location.href='index.php?action=profile';</script>";
+            // Lấy đường dẫn avatar cũ để lát nữa mình xóa, tránh rác server
+            $currentUserData = $this->model->getUserById($id);
+            $old_avatar = $currentUserData['avatar'] ?? null;
+
+            // --- BƯỚC 1: XỬ LÝ UPLOAD AVATAR ---
+            if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] == UPLOAD_ERR_OK) {
+                $target_dir = "uploads/avatars/";
+                if (!is_dir($target_dir)) {
+                    mkdir($target_dir, 0777, true);
+                }
+                
+                $file_extension = strtolower(pathinfo($_FILES["avatar"]["name"], PATHINFO_EXTENSION));
+                $safe_filename = "user-" . $id . "-" . time() . "." . $file_extension;
+                $target_file = $target_dir . $safe_filename;
+
+                $allowed_types = ['jpg', 'jpeg', 'png', 'gif'];
+                if (in_array($file_extension, $allowed_types) && $_FILES["avatar"]["size"] < 5000000) { // Giới hạn 5MB
+                    if (move_uploaded_file($_FILES["avatar"]["tmp_name"], $target_file)) {
+                        $avatar_path_for_db = $target_file; // Lưu đường dẫn để cập nhật DB
+                        $update_message_part[] = 'đổi avatar';
+                    } else {
+                        echo "<script>alert('Lỗi: Không thể di chuyển file avatar!'); window.history.back();</script>";
+                        exit();
+                    }
+                } else {
+                    echo "<script>alert('Lỗi: File không hợp lệ! Chỉ chấp nhận ảnh (jpg, png, gif) và dưới 5MB.'); window.history.back();</script>";
+                    exit();
+                }
             }
+
+            // --- BƯỚC 2: XỬ LÝ ĐỔI MẬT KHẨU ---
+            if (!empty($new_password)) {
+                if (empty($current_password)) {
+                    echo "<script>alert('Lỗi: Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu mới!'); window.history.back();</script>";
+                    exit();
+                }
+                if ($new_password !== $confirm_password) {
+                    echo "<script>alert('Lỗi: Mật khẩu mới và mật khẩu xác nhận không khớp!'); window.history.back();</script>";
+                    exit();
+                }
+                $user = $this->model->getUserById($id);
+                if (!$user || !password_verify($current_password, $user['password'])) {
+                    echo "<script>alert('Lỗi: Mật khẩu hiện tại không đúng!'); window.history.back();</script>";
+                    exit();
+                }
+                $password_to_update = $new_password;
+                $update_message_part[] = 'đổi mật khẩu';
+            }
+
+            // --- BƯỚC 3: GỌI MODEL ĐỂ LƯU VÀO DATABASE ---
+            $this->model->updateAdminProfile($id, $fullname, $password_to_update, $avatar_path_for_db);
+            
+            // Xóa file avatar cũ sau khi đã cập nhật thành công
+            if ($avatar_path_for_db !== null && $old_avatar !== null && file_exists($old_avatar)) {
+                unlink($old_avatar);
+            }
+
+            // --- BƯỚC 4: CẬP NHẬT LẠI SESSION CHO NÓNG ---
+            $_SESSION['user']['fullname'] = $fullname;
+            if ($avatar_path_for_db) {
+                $_SESSION['user']['avatar'] = $avatar_path_for_db;
+            }
+
+            // --- BƯỚC 5: THÔNG BÁO VÀ CHUYỂN HƯỚNG ---
+            $final_message = "Cập nhật hồ sơ" . (!empty($update_message_part) ? ' (' . implode(', ', $update_message_part) . ')' : '') . " thành công!";
+            $redirect_url = ($_SESSION['user']['role'] === 'admin') ? 'index.php?action=dashboard' : 'index.php?action=profile';
+            echo "<script>alert('$final_message'); window.location.href='$redirect_url';</script>";
         }
     }
-    // TRANG QUẢN LÝ HỒ SƠ & ĐƠN HÀNG CỦA KHÁCH
     public function profile() {
         if (!isset($_SESSION['user'])) {
             echo "<script>alert('Sếp phải đăng nhập mới xem được nha!'); window.location.href='index.php?action=login';</script>";

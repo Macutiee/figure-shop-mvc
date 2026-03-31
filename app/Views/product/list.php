@@ -61,29 +61,28 @@
         <h2 class="text-center mb-4">Danh sách Figure (Mô hình)</h2>
         
         <div class="d-flex justify-content-between align-items-center mb-3">
-            
-        <button type="button" class="btn btn-pink rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addModal">
-            + Thêm Figure Mới
-        </button>
-
-        <a href="index.php" class="btn btn-pink-outline rounded-pill px-4 ms-2">
-            🏠 Xem Cửa Hàng
-        </a>
-    <form action="index.php" method="GET" class="d-flex w-50">
-        <input type="hidden" name="action" value="admin"> 
-        
-        <input type="text" name="search" class="form-control me-2" 
-               placeholder="Nhập tên Figure hoặc hãng..." 
-               value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
-        
-        <button type="submit" class="btn btn-success">Tìm</button>
-        
-        <?php if(isset($_GET['search']) && $_GET['search'] != ''): ?>
-            <a href="index.php?action=admin" class="btn btn-secondary ms-2">Hủy</a>
-        <?php endif; ?>
-    </form>
-
-</div>
+            <div class="d-flex gap-2">
+                <a href="index.php?action=dashboard" class="btn btn-secondary rounded-pill px-4">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Quay lại
+                </a>
+                <button type="button" class="btn btn-pink rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addModal">
+                    + Thêm Figure Mới
+                </button>
+            </div>
+            <form action="index.php" method="GET" class="d-flex w-50">
+                <input type="hidden" name="action" value="admin"> 
+                
+                <input type="text" name="search" class="form-control me-2" 
+                       placeholder="Nhập tên Figure hoặc hãng..." 
+                       value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
+                
+                <button type="submit" class="btn btn-success">Tìm</button>
+                
+                <?php if(isset($_GET['search']) && $_GET['search'] != ''): ?>
+                    <a href="index.php?action=admin" class="btn btn-secondary ms-2">Hủy</a>
+                <?php endif; ?>
+            </form>
+        </div>
 
         <div class="card card-pink">
             <div class="card-body">
@@ -99,29 +98,8 @@
         <th>Hành động</th>
     </tr>
     </thead>
-                    <tbody>
-                        <?php foreach ($products as $row): ?>
-                        <tr>
-                            <td><?= $row['id'] ?></td>
-                            <td class="text-center align-middle">
-                                <img src="<?= $row['image'] ?>" 
-                                class="img-thumbnail figure-img" 
-                                width="60" 
-                                height="60"
-                                onclick="viewImage('<?= $row['image'] ?>', '<?= htmlspecialchars($row['name']) ?>')">
-                            </td>
-                            <td><?= $row['name'] ?></td>
-                            <td><span class="badge bg-info"><?= $row['brand'] ?></span></td>
-                            <td class="fw-bold text-danger"><?= number_format($row['price']) ?> đ</td>
-                            
-                            <td class="text-center fw-bold"><?= $row['stock'] ?></td>
-                            
-                            <td>
-                                <a href="index.php?action=edit&id=<?= $row['id'] ?>" class="btn btn-warning btn-sm">Sửa</a>
-                                <a href="index.php?action=delete&id=<?= $row['id'] ?>" onclick="return confirm('Xóa hả?')" class="btn btn-danger btn-sm">Xóa</a>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
+                    <tbody id="product-list-body">
+                        <tr><td colspan="7" class="text-center text-muted">Đang tải dữ liệu Waifu từ kho...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -180,16 +158,81 @@
         </div>
     </div>
     <script>
-    function viewImage(linkAnh, tenFigure) {
-        // 1. Gán link ảnh vào khung Modal
-        document.getElementById('modalImageSrc').src = linkAnh;
-        
-        // 2. Gán tên Figure vào dưới ảnh
-        document.getElementById('modalImageTitle').innerText = tenFigure;
-        
-        // 3. Bật Modal lên
-        var myModal = new bootstrap.Modal(document.getElementById('imageModal'));
-        myModal.show();
+    document.addEventListener("DOMContentLoaded", function() {
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            alert('Vui lòng đăng nhập!');
+            location.href = 'index.php?action=login'; 
+            return;
+        }
+
+        // Gọi đúng đường dẫn API mà bạn đã định nghĩa trong index.php
+        fetch('index.php?action=api_products', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message && data.message.includes('Token')) {
+                throw new Error('Token error');
+            }
+            const tbody = document.getElementById('product-list-body');
+            tbody.innerHTML = ''; 
+
+            data.forEach(product => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${product.id}</td>
+                    <td class="text-center align-middle">
+                        <img src="${product.image}" class="img-thumbnail figure-img" width="60" height="60" 
+                             onclick="viewImage('${product.image}', '${product.name.replace(/'/g, "\\'")}')" style="cursor:pointer;">
+                    </td>
+                    <td>${product.name}</td>
+                    <td><span class="badge bg-info">${product.category_name || product.brand}</span></td>
+                    <td class="fw-bold text-danger">${Number(product.price).toLocaleString('vi-VN')} đ</td>
+                    <td class="text-center fw-bold">${product.stock || 10}</td>
+                    <td>
+                        <a href="index.php?action=edit&id=${product.id}" class="btn btn-warning btn-sm">Sửa</a>
+                        <button onclick="deleteProduct(${product.id})" class="btn btn-danger btn-sm">Xóa</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        })
+        .catch(error => {
+            console.error('Lỗi:', error);
+            alert('Phiên đăng nhập API đã hết hạn, vui lòng đăng nhập lại!');
+            localStorage.removeItem('jwtToken');
+            location.href = 'index.php?action=login';
+        });
+    });
+
+    function deleteProduct(id) {
+        if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+            const token = localStorage.getItem('jwtToken');
+            
+            // Truyền ID vào body thay vì trên URL vì hàm apiDelete() của bạn đang đọc từ php://input
+            fetch(`index.php?action=api_delete`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify({ id: id })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Product deleted successfully' || data.message === 'Đã tiễn Waifu lên đường!') {
+                    location.reload(); 
+                } else {
+                    alert('Xóa sản phẩm thất bại');
+                }
+            })
+            .catch(error => console.error('Lỗi xóa:', error));
+        }
     }
     </script>
 </body>

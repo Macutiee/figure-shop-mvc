@@ -17,9 +17,22 @@
 <body>
 
     <div class="edit-box">
-        <h4 class="text-center fw-bold mb-4" style="color: #d81b60;"><i class="fa-solid fa-user-pen me-2"></i>Chỉnh Sửa Hồ Sơ</h4>
+        <div class="text-center">
+            <?php
+                $avatar_url = (!empty($user['avatar']) && file_exists($user['avatar']))
+                    ? BASE_URL . '/' . $user['avatar']
+                    : "https://ui-avatars.com/api/?name=" . urlencode($user['fullname']) . "&background=fecfef&color=d81b60&size=100&bold=true";
+            ?>
+            <img src="<?= $avatar_url ?>" class="rounded-circle shadow-sm mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+            <h4 class="fw-bold mb-4" style="color: #d81b60;"><i class="fa-solid fa-user-pen me-2"></i>Chỉnh Sửa Hồ Sơ</h4>
+        </div>
         
-        <form action="index.php?action=update_user&id=<?= $user['id'] ?>" method="POST">
+        <form action="index.php?action=update_user&id=<?= $user['id'] ?>" method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label class="form-label fw-bold text-danger">Ảnh đại diện mới</label>
+                <input type="file" name="avatar" class="form-control">
+                <small class="form-text text-muted">Bỏ trống nếu không muốn thay đổi avatar.</small>
+            </div>
             <div class="mb-3">
                 <label class="form-label fw-bold text-danger">Tên Khách Hàng</label>
                 <input type="text" name="fullname" class="form-control" value="<?= htmlspecialchars($user['fullname']) ?>" required>

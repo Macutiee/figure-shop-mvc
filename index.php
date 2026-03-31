@@ -1,6 +1,10 @@
 <?php
 session_start();
 
+// TỰ ĐỘNG XÁC ĐỊNH ĐƯỜNG DẪN GỐC CỦA WEBSITE (VÍ DỤ: /figure-shop-mvc)
+// ĐỂ MỌI LINK ẢNH LUÔN CHÍNH XÁC
+define('BASE_URL', str_replace('\\', '/', substr(__DIR__, strlen($_SERVER['DOCUMENT_ROOT']))));
+
 require_once __DIR__ . '/app/Controllers/ProductController.php';
 
 $controller = new ProductController();
@@ -133,6 +137,10 @@ switch ($action) {
     case 'api_detail':
         require_once 'app/Controllers/ProductApiController.php';
         (new ProductApiController())->apiDetail();
+        break;
+    case 'api_categories':
+        require_once 'app/Controllers/CategoryApiController.php';
+        (new CategoryApiController())->index();
         break;
     default:
         $controller->index();

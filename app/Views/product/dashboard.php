@@ -63,7 +63,7 @@
                 <div class="sidebar-brand"><i class="fa-solid fa-rose"></i> MA'S STORE</div>
                 <ul class="nav flex-column px-2">
                     <li class="nav-item"><a class="nav-link active" href="#"><i class="fa-solid fa-chart-pie me-2"></i> Tổng Quan</a></li>
-                    <li class="nav-item"><a class="nav-link" href="index.php?action=admin"><i class="fa-solid fa-box-open me-2"></i> QL Sản Phẩm</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.php?action=admin"><i class="fa-solid fa-box-open me-2"></i> Quản Lý Sản Phẩm</a></li>
                     <li class="nav-item"><a class="nav-link" href="index.php?action=manage_orders"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Đơn Hàng</a></li>
                     <li class="nav-item"><a class="nav-link" href="index.php"><i class="fa-solid fa-store me-2"></i> Xem Cửa Hàng</a></li>
                 </ul>
@@ -76,14 +76,15 @@
                         <p class="text-muted mb-0 small">Chào mừng tới với Dashboard dành cho Admin</p>
                     </div>
                     <div class="d-flex align-items-center gap-3">
-                        <div class="search-box position-relative">
-                        <input type="text" class="form-control rounded-pill pe-5" placeholder="Tìm đơn hàng, khách hàng..." style="background: #fff0f3; border-color: #ffc2d1; width: 280px;">
-                            <i class="fa-solid fa-search position-absolute text-danger" style="top: 13px; right: 20px;"></i>
-                        </div>
                         <!-- KHÚC AVATAR ADMIN (Menu xổ xuống) -->
-                        <div class="dropdown">
+                        <div class="dropdown"> 
                             <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false" style="background: white; padding: 5px 15px 5px 5px; border-radius: 50px; border: 1px solid #ffe0e6; box-shadow: 0 2px 5px rgba(216, 27, 96, 0.1);">
-                                <img src="https://ui-avatars.com/api/?name=<?= isset($_SESSION['user']) ? urlencode($_SESSION['user']['fullname']) : 'Admin' ?>&background=ff4d6d&color=fff" alt="admin" width="35" height="35" class="rounded-circle shadow-sm">
+                                <?php
+                                    $admin_avatar_url = (isset($_SESSION['user']['avatar']) && !empty($_SESSION['user']['avatar']) && file_exists($_SESSION['user']['avatar']))
+                                        ? BASE_URL . '/' . $_SESSION['user']['avatar']
+                                        : "https://ui-avatars.com/api/?name=" . (isset($_SESSION['user']) ? urlencode($_SESSION['user']['fullname']) : 'Admin') . "&background=ff4d6d&color=fff";
+                                ?>
+                                <img src="<?= $admin_avatar_url ?>" alt="admin" width="35" height="35" class="rounded-circle shadow-sm" style="object-fit: cover;">
                                 <span class="fw-bold" style="color: #d81b60;"><?= isset($_SESSION['user']) ? htmlspecialchars($_SESSION['user']['fullname']) : 'Sếp Loan' ?></span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end text-small shadow-lg" style="border-radius: 12px; border: none; background-color: #fff9fa; margin-top: 10px;">
@@ -183,7 +184,12 @@
                                 <tr>
                                     <td class="fw-bold text-danger">#<?= $user['id'] ?></td>
                                     <td class="text-start fw-bold">
-                                        <img src="https://ui-avatars.com/api/?name=<?= urlencode($user['fullname']) ?>&background=fff0f3&color=d81b60&bold=true" class="rounded-circle me-2" width="35">
+                                        <?php
+                                            $user_avatar_url = (!empty($user['avatar']) && file_exists($user['avatar']))
+                                                ? BASE_URL . '/' . $user['avatar']
+                                                : "https://ui-avatars.com/api/?name=" . urlencode($user['fullname']) . "&background=fff0f3&color=d81b60&bold=true";
+                                        ?>
+                                        <img src="<?= $user_avatar_url ?>" class="rounded-circle me-2" width="35" height="35" style="object-fit: cover;">
                                         <?= htmlspecialchars($user['fullname']) ?>
                                     </td>
                                     <td><?= htmlspecialchars($user['email']) ?></td>
@@ -211,7 +217,12 @@
                                                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                                     </div>
                                                     <div class="modal-body text-center p-4">
-                                                        <img src="https://ui-avatars.com/api/?name=<?= urlencode($user['fullname']) ?>&background=fecfef&color=d81b60&bold=true&size=100" class="rounded-circle mb-3 shadow">
+                                                        <?php
+                                                            $modal_avatar_url = (!empty($user['avatar']) && file_exists($user['avatar']))
+                                                                ? BASE_URL . '/' . $user['avatar']
+                                                                : "https://ui-avatars.com/api/?name=" . urlencode($user['fullname']) . "&background=fecfef&color=d81b60&bold=true&size=100";
+                                                        ?>
+                                                        <img src="<?= $modal_avatar_url ?>" class="rounded-circle mb-3 shadow" style="width: 100px; height: 100px; object-fit: cover;">
                                                         <h4 style="color: #d81b60; font-weight: bold;"><?= htmlspecialchars($user['fullname']) ?></h4>
                                                         <p class="text-muted mb-1"><i class="fa-solid fa-envelope me-2 text-danger"></i><?= htmlspecialchars($user['email']) ?></p>
                                                         <p class="text-muted mb-3"><i class="fa-solid fa-phone me-2 text-danger"></i><?= htmlspecialchars($user['phone']) ?></p>
@@ -242,7 +253,12 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <form action="index.php?action=update_profile" method="POST">
+                    <form action="index.php?action=update_profile" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="fw-bold" style="color: #d81b60;">Ảnh đại diện mới</label>
+                            <input type="file" name="avatar" class="form-control" style="border-radius: 10px;">
+                            <small class="form-text text-muted">Chọn ảnh mới để thay đổi. Bỏ trống nếu không muốn đổi.</small>
+                        </div>
                         <div class="mb-3">
                             <label class="fw-bold" style="color: #d81b60;">Tên hiển thị</label>
                             <input type="text" name="fullname" class="form-control" style="border-radius: 10px;" value="<?= isset($_SESSION['user']) ? htmlspecialchars($_SESSION['user']['fullname']) : '' ?>" required>
@@ -253,12 +269,18 @@
                         </div>
                         
                         <hr class="my-4" style="border-color: #ffc2d1;">
-                        
-                        <h6 class="fw-bold text-danger mb-3"><i class="fa-solid fa-key me-2"></i>Đổi Mật Khẩu</h6>
+
+                        <h6 class="fw-bold text-danger mb-3"><i class="fa-solid fa-key me-2"></i>Đổi Mật Khẩu (Bỏ trống nếu không đổi)</h6>
                         <div class="mb-3">
-                            <input type="password" name="new_password" class="form-control" style="border-radius: 10px;" placeholder="Nhập mật khẩu mới...">
+                            <input type="password" name="current_password" class="form-control" style="border-radius: 10px;" placeholder="Nhập mật khẩu HIỆN TẠI...">
                         </div>
-                        
+                        <div class="mb-3">
+                            <input type="password" name="new_password" class="form-control" style="border-radius: 10px;" placeholder="Nhập mật khẩu MỚI...">
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" name="confirm_password" class="form-control" style="border-radius: 10px;" placeholder="XÁC NHẬN mật khẩu mới...">
+                        </div>
+
                         <button type="submit" class="btn w-100 fw-bold text-white mt-2 py-2" style="background: linear-gradient(135deg, #ff758f, #ff4d6d); border-radius: 12px; box-shadow: 0 4px 10px rgba(255, 77, 109, 0.3);">
                             <i class="fa-solid fa-floppy-disk me-2"></i>Lưu Thay Đổi ✨
                         </button>

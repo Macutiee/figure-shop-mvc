@@ -26,7 +26,12 @@
     <div class="row g-4">
         <div class="col-md-3">
             <div class="profile-box text-center mb-4">
-                <img src="https://ui-avatars.com/api/?name=<?= urlencode($userInfo['fullname']) ?>&background=fecfef&color=d81b60&size=100&bold=true" class="rounded-circle shadow-sm mb-3">
+                <?php
+                    $avatar_url = (!empty($userInfo['avatar']) && file_exists($userInfo['avatar']))
+                        ? BASE_URL . '/' . $userInfo['avatar']
+                        : "https://ui-avatars.com/api/?name=" . urlencode($userInfo['fullname']) . "&background=fecfef&color=d81b60&size=100&bold=true";
+                ?>
+                <img src="<?= $avatar_url ?>" class="rounded-circle shadow-sm mb-3" style="width: 100px; height: 100px; object-fit: cover;">
                 <h5 class="fw-bold text-danger"><?= htmlspecialchars($userInfo['fullname']) ?></h5>
             </div>
             <div class="profile-box p-2">
@@ -43,7 +48,12 @@
                     
                     <div class="tab-pane fade show active" id="info" role="tabpanel">
                         <h5 class="fw-bold mb-4" style="color: #ff4d6d;">Cập Nhật Thông Tin</h5>
-                        <form action="index.php?action=update_profile" method="POST">
+                        <form action="index.php?action=update_profile" method="POST" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label class="fw-bold text-muted mb-2">Ảnh đại diện</label>
+                                <input type="file" name="avatar" class="form-control p-2" style="border-radius: 10px;">
+                                <small class="form-text text-muted">Chọn ảnh mới để thay đổi. Bỏ trống nếu không muốn đổi.</small>
+                            </div>
                             <div class="mb-3">
                                 <label class="fw-bold text-muted mb-2">Tên hiển thị</label>
                                 <input type="text" name="fullname" class="form-control p-2" style="border-radius: 10px;" value="<?= htmlspecialchars($userInfo['fullname']) ?>" required>
@@ -57,11 +67,18 @@
                                 <input type="text" class="form-control p-2" style="border-radius: 10px; background: #f8f9fa;" value="<?= htmlspecialchars($userInfo['phone']) ?>" readonly>
                             </div>
                             <hr class="my-4 text-muted">
-                            <div class="mb-4">
-                                <label class="fw-bold text-danger mb-2"><i class="fa-solid fa-key me-2"></i>Mật khẩu mới (Tùy chọn)</label>
-                                <input type="password" name="new_password" class="form-control p-2" style="border-radius: 10px;" placeholder="Bỏ trống nếu không muốn đổi...">
+                            <h6 class="fw-bold text-danger mb-3"><i class="fa-solid fa-key me-2"></i>Đổi Mật Khẩu (Bỏ trống nếu không đổi)</h6>
+                            <div class="mb-3">
+                                <input type="password" name="current_password" class="form-control p-2" style="border-radius: 10px;" placeholder="Nhập mật khẩu HIỆN TẠI...">
                             </div>
-                            <button type="submit" class="btn text-white fw-bold px-5 py-2" style="background: linear-gradient(135deg, #ff758f, #ff4d6d); border-radius: 12px;">LƯU THAY ĐỔI</button>
+                            <div class="mb-3">
+                                <input type="password" name="new_password" class="form-control p-2" style="border-radius: 10px;" placeholder="Nhập mật khẩu MỚI...">
+                            </div>
+                            <div class="mb-3">
+                                <input type="password" name="confirm_password" class="form-control p-2" style="border-radius: 10px;" placeholder="XÁC NHẬN mật khẩu mới...">
+                            </div>
+
+                            <button type="submit" class="btn text-white fw-bold px-5 py-2 mt-2" style="background: linear-gradient(135deg, #ff758f, #ff4d6d); border-radius: 12px;">LƯU THAY ĐỔI</button>
                         </form>
                     </div>
 

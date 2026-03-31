@@ -268,8 +268,13 @@
     <?php if(isset($_SESSION['user'])): ?>
         <!-- 1. NẾU ĐÃ ĐĂNG NHẬP -> HIỆN AVATAR VÀ MENU -->
         <div class="dropdown">
-            <a class="text-decoration-none fw-bold dropdown-toggle d-flex align-items-center gap-2 bg-white rounded-pill shadow-sm px-3 py-1" href="#" role="button" data-bs-toggle="dropdown" style="color: #d81b60; border: 1px solid #ffe0e6;">
-                <img src="https://ui-avatars.com/api/?name=<?= urlencode($_SESSION['user']['fullname']) ?>&background=fecfef&color=d81b60&bold=true" class="rounded-circle" width="30">
+            <a class="text-decoration-none fw-bold dropdown-toggle d-flex align-items-center gap-2 bg-white rounded-pill shadow-sm p-1" href="#" role="button" data-bs-toggle="dropdown" style="color: #d81b60; border: 1px solid #ffe0e6;">
+                <?php
+                    $header_avatar_url = (isset($_SESSION['user']['avatar']) && !empty($_SESSION['user']['avatar']) && file_exists($_SESSION['user']['avatar']))
+                        ? BASE_URL . '/' . $_SESSION['user']['avatar']
+                        : "https://ui-avatars.com/api/?name=" . urlencode($_SESSION['user']['fullname']) . "&background=fecfef&color=d81b60&bold=true";
+                ?>
+                <img src="<?= $header_avatar_url ?>" class="rounded-circle" width="32" height="32" style="object-fit: cover;">
                 <span class="d-none d-md-block"><?= htmlspecialchars($_SESSION['user']['fullname']) ?></span>
             </a>
             
