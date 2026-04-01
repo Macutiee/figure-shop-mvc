@@ -142,6 +142,33 @@ switch ($action) {
         require_once 'app/Controllers/CategoryApiController.php';
         (new CategoryApiController())->index();
         break;
+
+    // --- KHÚC DÀNH CHO API CỦA DASHBOARD ---
+    case 'api_auth_me':
+        require_once 'app/Controllers/DashboardApiController.php';
+        (new DashboardApiController())->authMe();
+        break;
+    case 'api_dashboard_stats':
+        require_once 'app/Controllers/DashboardApiController.php';
+        (new DashboardApiController())->stats();
+        break;
+    case 'api_users':
+        require_once 'app/Controllers/DashboardApiController.php';
+        (new DashboardApiController())->users();
+        break;
+    case 'api_dashboard_charts':
+        require_once 'app/Controllers/DashboardApiController.php';
+        (new DashboardApiController())->charts();
+        break;
+    case 'api_update_profile':
+        require_once 'app/Controllers/DashboardApiController.php';
+        (new DashboardApiController())->updateProfile();
+        break;
+    case 'api_logout':
+        require_once 'app/Controllers/DashboardApiController.php';
+        (new DashboardApiController())->logout();
+        break;
+        
     default:
         $controller->index();
         break;

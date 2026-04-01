@@ -163,23 +163,9 @@ class ProductController {
     }
 
     public function dashboard() {
-        // 1. Lấy dữ liệu thật từ Database
-        $totalRevenue = $this->model->getTotalRevenue() ?? 0;
-        $totalOrders = $this->model->getTotalOrders() ?? 0;
-        $users = $this->model->getAllUsers() ?? [];
-        $salesByBrandRawData = $this->model->getSalesByBrand() ?? [];
-
-        // 2. Xử lý dữ liệu biểu đồ tròn Top hãng
-        $brandLabels = array_column($salesByBrandRawData, 'brand');
-        $brandSales = array_column($salesByBrandRawData, 'total_sold');
-
-        // 3. Giữ lại 3 biến giả lập CẦN THIẾT cho Stat Cards & Header
-        $todayRevenue = 750000; 
-        $newOrdersToday = 34; 
-        $revenueTargetPercent = 71; // Giữ lại để hiện trên Progress Bar mục tiêu
-
-        // Gọi giao diện "siêu phẩm" dịu ngọt mới ra
-        require_once __DIR__ . '/../Views/product/dashboard.php';
+        // Đã chuyển sang dùng giao diện thuần HTML và gọi API bằng jQuery
+        // Phải dùng __DIR__ để PHP tìm chính xác đường dẫn file, tránh lỗi trắng trang
+        require_once __DIR__ . '/../Views/product/dashboard_api.html';
     }
 
     public function store() {

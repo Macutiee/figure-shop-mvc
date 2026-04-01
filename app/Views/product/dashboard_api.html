@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - Ma's Figure Paradise (API Version)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Thêm thư viện jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        /* --- ĐE-CO TONE HỒNG SANG TRỌNG (THEO TARGET) --- */
+        :root {
+            --pink-bg: #fff5f7; /* Nền hồng siêu nhạt */
+            --pink-sidebar: #ffe0e6; /* Nền sidebar hồng phấn */
+            --pink-main: #ff4d6d; /* Hồng đậm (active) */
+            --pink-text: #b01c4e; /* Chữ hồng tro đậm */
+            --pink-badge: #e63e6d; /* Màu huy hiệu */
+        }
+
+        body { background-color: var(--pink-bg); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: var(--pink-text); }
+        
+        .rounded-box { background: #fff; border-radius: 20px; box-shadow: 0 10px 25px rgba(216, 27, 96, 0.08); border: none; padding: 25px; }
+
+        .sidebar { background-color: var(--pink-sidebar); min-height: 100vh; border-right: none; padding: 25px 15px; }
+        .sidebar-brand { color: #d81b60; font-weight: 900; font-size: 1.6rem; text-align: center; margin-bottom: 35px; letter-spacing: 0.5px;}
+        .nav-link { color: #c2185b; font-weight: 600; margin-bottom: 12px; border-radius: 12px; transition: 0.3s; padding: 12px 18px; }
+        .nav-link:hover { background-color: rgba(255, 77, 109, 0.1); color: var(--pink-main); }
+        .nav-link.active { background-color: var(--pink-main); color: white; box-shadow: 0 4px 10px rgba(255, 77, 109, 0.3); }
+
+        .admin-header { background: #fff; border-radius: 15px; padding: 15px 25px; margin-bottom: 30px; box-shadow: 0 5px 15px rgba(216, 27, 96, 0.05); }
+
+        .stat-card { background: linear-gradient(135deg, #fff 0%, #fff0f3 100%); border-radius: 15px; border: none; transition: 0.3s; padding: 20px; box-shadow: 0 5px 15px rgba(216, 27, 96, 0.05); }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(216, 27, 96, 0.1); }
+        .stat-icon { font-size: 1.5rem; color: #ff758f; background: #fff; border-radius: 12px; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 10px rgba(216, 27, 96, 0.05); }
+        .stat-title { font-size: 0.95rem; font-weight: 600; color: #c2185b; margin-top: 15px;}
+        .stat-value { font-size: 1.7rem; font-weight: 900; color: #d81b60; }
+        .stat-percent { font-size: 0.8rem; border-radius: 20px; padding: 2px 10px; }
+
+        .chart-box { background: #fff; border-radius: 20px; box-shadow: 0 10px 25px rgba(216, 27, 96, 0.08); padding: 25px; margin-bottom: 30px; }
+        .chart-box h5 { color: #c2185b; font-weight: 700; border-bottom: 2px dashed #ffc2d1; padding-bottom: 15px; margin-bottom: 20px;}
+
+        .table-box { background: #fff; border-radius: 20px; box-shadow: 0 10px 25px rgba(216, 27, 96, 0.08); padding: 25px; }
+        .table th { color: #c2185b; font-weight: 700; border-bottom: 2px solid #ffc2d1; padding: 15px; }
+        .table td { padding: 15px; border-bottom: 1px solid #ffe4e8; }
+        .table-striped>tbody>tr:nth-of-type(odd)>* { background-color: #fff9fa; }
+        
+        .badge-pink { background-color: var(--pink-badge); color: white; border-radius: 20px; padding: 5px 15px;}
+        .btn-pink-sm { background-color: #fff; color: #e63e6d; border: 1px solid #ff758f; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; transition: 0.3s;}
+        .btn-pink-sm:hover { background-color: #ff758f; color: white;}
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <div class="col-md-2 sidebar d-none d-md-block">
+                <div class="sidebar-brand"><i class="fa-solid fa-rose"></i> MA'S STORE</div>
+                <ul class="nav flex-column px-2">
+                    <li class="nav-item"><a class="nav-link active" href="#"><i class="fa-solid fa-chart-pie me-2"></i> Tổng Quan</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.php?action=admin"><i class="fa-solid fa-box-open me-2"></i> Quản Lý Sản Phẩm</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.php?action=manage_orders"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Đơn Hàng</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.php"><i class="fa-solid fa-store me-2"></i> Xem Cửa Hàng</a></li>
+                </ul>
+            </div>
+
+            <div class="col-md-10 p-4">
+                <div class="admin-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="fw-bold mb-1" style="color: #d81b60;" id="admin-welcome-name">Đang tải... ✨</h4>
+                        <p class="text-muted mb-0 small">Chào mừng tới với Dashboard dành cho Admin</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="dropdown"> 
+                            <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false" style="background: white; padding: 5px 15px 5px 5px; border-radius: 50px; border: 1px solid #ffe0e6; box-shadow: 0 2px 5px rgba(216, 27, 96, 0.1);">
+                                <img src="" id="admin-avatar" alt="admin" width="35" height="35" class="rounded-circle shadow-sm" style="object-fit: cover; display: none;">
+                                <span class="fw-bold" style="color: #d81b60;" id="admin-name">Loading...</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end text-small shadow-lg" style="border-radius: 12px; border: none; background-color: #fff9fa; margin-top: 10px;">
+                                <li><a class="dropdown-item py-2 fw-bold" href="index.php"><i class="fa-solid fa-store me-2" style="color: #ff4d6d;"></i>Ra Trang Chủ Cửa Hàng</a></li>
+                                <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#adminProfileModal"><i class="fa-solid fa-user-gear me-2" style="color: #ff4d6d;"></i>Hồ sơ cá nhân</a></li>
+                                <li><hr class="dropdown-divider" style="border-color: #ffe0e6;"></li>
+                                <li><a class="dropdown-item py-2 text-danger fw-bold" href="#" id="btn-logout"><i class="fa-solid fa-right-from-bracket me-2 text-danger"></i>Đăng xuất ngay</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-5">
+                    <div class="col-md-3">
+                        <div class="stat-card h-100">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                                <span class="badge badge-pink stat-percent">+5% <i class="fa-solid fa-arrow-up"></i></span>
+                            </div>
+                            <h6 class="stat-title">Khách Hàng Mới</h6>
+                            <div class="stat-value" id="stat-users-count">...</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card h-100">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="stat-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                                <span class="badge bg-success rounded-pill px-3 stat-percent text-white">+14% <i class="fa-solid fa-arrow-up"></i></span>
+                            </div>
+                            <h6 class="stat-title">Doanh Thu Hôm Nay</h6>
+                            <div class="stat-value text-danger" id="stat-today-revenue">...</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card h-100">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="stat-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+                            </div>
+                            <h6 class="stat-title">Đơn Hàng Hôm Nay</h6>
+                            <div class="stat-value text-success" id="stat-new-orders">...</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card h-100">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
+                            </div>
+                            <h6 class="stat-title">Tổng Doanh Thu</h6>
+                            <div class="stat-value text-danger" style="font-size: 1.5rem;" id="stat-total-revenue">...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-5 g-4">
+                    <div class="col-md-7">
+                        <div class="chart-box h-100 mb-0">
+                            <h5><i class="fa-solid fa-chart-line me-2"></i> Xu Hướng Doanh Thu</h5>
+                            <div style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-5">
+                        <div class="chart-box h-100 mb-0">
+                            <h5><i class="fa-solid fa-tags me-2"></i> Phân Khúc Doanh Số Theo Hãng</h5>
+                            <div style="position: relative; height: 300px; width: 100%;">
+                                <canvas id="brandPieChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rounded-box mb-4 p-3 d-flex align-items-center justify-content-between" style="background: #fff0f3; border: 2px dashed #ffc2d1;">
+                    <h6 class="fw-bold mb-0 text-danger"><i class="fa-solid fa-bullseye me-2"></i>Mục Tiêu Doanh Thu Tháng:</h6>
+                    <div class="progress flex-grow-1 mx-3" style="height: 20px; border-radius: 15px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" id="stat-target-progress" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
+                    <span class="fw-bold" style="color: #b01c4e;">Cố lên! 💪</span>
+                </div>
+                <div class="table-box">
+                    <h5 class="fw-bold mb-4" style="color: #ff4d6d;"><i class="fa-solid fa-users-gear me-2"></i> Quản Lý Tài Khoản Khách Hàng</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped table-borderless align-middle text-center">
+                            <thead class="text-danger">
+                                <tr>
+                                    <th>ID</th>
+                                    <th class="text-start">Tên Khách Hàng</th>
+                                    <th>Email</th>
+                                    <th>Số Điện Thoại</th>
+                                    <th>Phân Quyền</th>
+                                    <th>Hành Động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <!-- Dữ liệu API đổ vào đây -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌟 MODAL HỒ SƠ KHÁCH HÀNG (CHỈ CẦN 1 CÁI DÙNG CHUNG) -->
+    <div class="modal fade" id="viewUserModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none; background: #fff5f7;">
+                <div class="modal-header" style="background: #ff758f; color: white; border-radius: 20px 20px 0 0;">
+                    <h5 class="modal-title"><i class="fa-solid fa-id-card me-2"></i>Hồ Sơ Khách Hàng</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <img id="modal-user-avatar" src="" class="rounded-circle mb-3 shadow" style="width: 100px; height: 100px; object-fit: cover;">
+                    <h4 id="modal-user-name" style="color: #d81b60; font-weight: bold;"></h4>
+                    <p class="text-muted mb-1"><i class="fa-solid fa-envelope me-2 text-danger"></i><span id="modal-user-email"></span></p>
+                    <p class="text-muted mb-3"><i class="fa-solid fa-phone me-2 text-danger"></i><span id="modal-user-phone"></span></p>
+                    <span id="modal-user-role" class="badge rounded-pill px-4 py-2 fs-6"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL HỒ SƠ CÁ NHÂN & ĐỔI MẬT KHẨU -->
+    <div class="modal fade" id="adminProfileModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none; background: #fff5f7;">
+                <div class="modal-header" style="background: #ff758f; color: white; border-radius: 20px 20px 0 0;">
+                    <h5 class="modal-title"><i class="fa-solid fa-user-shield me-2"></i>Hồ Sơ Của Sếp</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="adminProfileForm">
+                        <div class="mb-3">
+                            <label class="fw-bold" style="color: #d81b60;">Ảnh đại diện mới</label>
+                            <input type="file" name="avatar" class="form-control" style="border-radius: 10px;">
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold" style="color: #d81b60;">Tên hiển thị</label>
+                            <input type="text" id="profile-fullname" name="fullname" class="form-control" style="border-radius: 10px;" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="fw-bold" style="color: #d81b60;">Email đăng nhập</label>
+                            <input type="email" id="profile-email" class="form-control text-muted" style="border-radius: 10px; background: #ffe0e6;" readonly>
+                        </div>
+                        <hr class="my-4" style="border-color: #ffc2d1;">
+                        <h6 class="fw-bold text-danger mb-3"><i class="fa-solid fa-key me-2"></i>Đổi Mật Khẩu</h6>
+                        <div class="mb-3"><input type="password" name="current_password" class="form-control" style="border-radius: 10px;" placeholder="Nhập mật khẩu HIỆN TẠI..."></div>
+                        <div class="mb-3"><input type="password" name="new_password" class="form-control" style="border-radius: 10px;" placeholder="Nhập mật khẩu MỚI..."></div>
+                        <div class="mb-3"><input type="password" name="confirm_password" class="form-control" style="border-radius: 10px;" placeholder="XÁC NHẬN mật khẩu mới..."></div>
+                        <button type="submit" class="btn w-100 fw-bold text-white mt-2 py-2" style="background: linear-gradient(135deg, #ff758f, #ff4d6d); border-radius: 12px;">
+                            <i class="fa-solid fa-floppy-disk me-2"></i>Lưu Thay Đổi ✨
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 🚀 TẤT CẢ LOGIC CALL API BẰNG JQUERY Ở ĐÂY -->
+    <script>
+        $(document).ready(function() {
+            
+            // 1. Lấy thông tin Admin đăng nhập
+            $.ajax({
+                url: 'index.php?action=api_auth_me',
+                method: 'GET',
+                dataType: 'json',
+                success: function(admin) {
+                    let avatarUrl = admin.avatar ? admin.avatar : "https://ui-avatars.com/api/?name=" + encodeURIComponent(admin.fullname) + "&background=ff4d6d&color=fff";
+                    $('#admin-avatar').attr('src', avatarUrl).show();
+                    $('#admin-name').text(admin.fullname);
+                    let shortName = admin.fullname.split(' ').pop();
+                    $('#admin-welcome-name').text('Chào ' + shortName + '! ✨');
+                    
+                    // Fill dữ liệu vào form hồ sơ
+                    $('#profile-fullname').val(admin.fullname);
+                    $('#profile-email').val(admin.email);
+                }
+            });
+
+            // 2. Lấy dữ liệu Thống kê tổng quan
+            $.ajax({
+                url: 'index.php?action=api_dashboard_stats',
+                method: 'GET',
+                dataType: 'json',
+                success: function(res) {
+                    $('#stat-users-count').text(res.total_users);
+                    $('#stat-today-revenue').text(new Intl.NumberFormat('vi-VN').format(res.today_revenue) + ' đ');
+                    $('#stat-new-orders').html(res.new_orders_today + ' <span class="fs-6 fw-normal">đơn</span>');
+                    $('#stat-total-revenue').text(new Intl.NumberFormat('vi-VN').format(res.total_revenue) + ' đ');
+                    
+                    $('#stat-target-progress')
+                        .css('width', res.revenue_target_percent + '%')
+                        .attr('aria-valuenow', res.revenue_target_percent)
+                        .text(res.revenue_target_percent + '% Đã đạt');
+                }
+            });
+
+            // 3. Render Table Khách Hàng
+            $.ajax({
+                url: 'index.php?action=api_users',
+                method: 'GET',
+                dataType: 'json',
+                success: function(users) {
+                    let tbody = $('#users-table-body');
+                    tbody.empty();
+                    users.forEach(function(user) {
+                        let avatarUrl = user.avatar ? user.avatar : "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.fullname) + "&background=fff0f3&color=d81b60&bold=true";
+                        let roleBadge = user.role === 'admin' ? '<span class="badge bg-danger rounded-pill px-3">Admin</span>' : '<span class="badge bg-success rounded-pill px-3">Khách hàng</span>';
+                        
+                        let tr = `
+                            <tr>
+                                <td class="fw-bold text-danger">#${user.id}</td>
+                                <td class="text-start fw-bold"><img src="${avatarUrl}" class="rounded-circle me-2" width="35" height="35" style="object-fit: cover;">${user.fullname}</td>
+                                <td>${user.email}</td>
+                                <td>${user.phone}</td>
+                                <td>${roleBadge}</td>
+                                <td>
+                                    <!-- Truyền toàn bộ object user vào data-attribute để lát nữa JS tái sử dụng -->
+                                    <button class="btn btn-pink-sm btn-view-user" data-user='${JSON.stringify(user)}'><i class="fa-solid fa-eye"></i></button>
+                                    <a href="index.php?action=edit_user&id=${user.id}" class="btn btn-pink-sm ms-1"><i class="fa-solid fa-pen-to-square"></i></a>
+                                </td>
+                            </tr>`;
+                        tbody.append(tr);
+                    });
+                }
+            });
+
+            // 4. Bắt sự kiện click để điền dữ liệu vào Modal View User (Event Delegation)
+            $(document).on('click', '.btn-view-user', function() {
+                let user = $(this).data('user');
+                let avatarUrl = user.avatar ? user.avatar : "https://ui-avatars.com/api/?name=" + encodeURIComponent(user.fullname) + "&background=fecfef&color=d81b60&bold=true&size=100";
+                
+                $('#modal-user-avatar').attr('src', avatarUrl);
+                $('#modal-user-name').text(user.fullname);
+                $('#modal-user-email').text(user.email);
+                $('#modal-user-phone').text(user.phone);
+                
+                let roleBadge = $('#modal-user-role');
+                if(user.role === 'admin') {
+                    roleBadge.removeClass('bg-success').addClass('bg-danger').text('Quản Trị 😎');
+                } else {
+                    roleBadge.removeClass('bg-danger').addClass('bg-success').text('Khách Hàng');
+                }
+                $('#viewUserModal').modal('show');
+            });
+
+            // 5. Khởi tạo Biểu đồ từ API
+            $.ajax({
+                url: 'index.php?action=api_dashboard_charts',
+                method: 'GET',
+                dataType: 'json',
+                success: function(res) {
+                    new Chart(document.getElementById('revenueChart').getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: res.revenue_labels,
+                            datasets: [{
+                                label: 'Doanh thu (đ)', data: res.revenue_data,
+                                borderColor: '#ff4d6d', backgroundColor: 'rgba(255, 77, 109, 0.1)', borderWidth: 3, tension: 0.4, fill: true, pointBackgroundColor: '#fff', pointBorderColor: '#ff4d6d', pointRadius: 6
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                    });
+
+                    new Chart(document.getElementById('brandPieChart').getContext('2d'), {
+                        type: 'pie',
+                        data: {
+                            labels: res.brand_labels,
+                            datasets: [{
+                                data: res.brand_sales,
+                                backgroundColor: ['#93C5FD', '#34D399', '#FBBF24', '#A78BFA', '#F472B6'],
+                                borderColor: '#fff', borderWidth: 2
+                            }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+                    });
+                }
+            });
+
+            // 6. Xử lý Submit Form API (Cập nhật Profile)
+            $('#adminProfileForm').on('submit', function(e) {
+                e.preventDefault();
+                let formData = new FormData(this);
+                $.ajax({
+                    url: 'index.php?action=api_update_profile', method: 'POST', data: formData, processData: false, contentType: false,
+                    success: function() { alert('Lưu hồ sơ thành công! ✨'); location.reload(); },
+                    error: function() { alert('Có lỗi xảy ra, vui lòng thử lại.'); }
+                });
+            });
+
+            // 7. Xử lý Đăng xuất ngay tại Client-side
+            $('#btn-logout').on('click', function(e) {
+                e.preventDefault();
+                if(confirm('Bạn có muốn đăng xuất ngay bây giờ?')) {
+                    $.post('index.php?action=api_logout', function() { window.location.href = 'index.php'; });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
